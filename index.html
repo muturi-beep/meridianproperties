@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Meridian Properties — Sign In</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --ink:#0c0f18;--ink-2:#131722;--ink-3:#1a2030;--ink-4:#222840;
+      --copper:#b8834a;--copper-l:#d4a46a;--copper-dim:rgba(184,131,74,.14);
+      --white:#ffffff;--t1:#edf0f8;--t2:#7a83a0;--t3:#3a4260;
+      --border:rgba(255,255,255,.07);--border-2:rgba(255,255,255,.12);
+      --green:#3ecf8e;--green-bg:rgba(62,207,142,.12);
+      --red:#f06060;--red-bg:rgba(240,96,96,.12);
+      --font-serif:'Cormorant Garamond',serif;
+      --font-sans:'Outfit',sans-serif;
+      --r:12px;--rs:8px;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:var(--font-sans);background:var(--ink);color:var(--t1);min-height:100vh;overflow-x:hidden;display:flex;align-items:stretch}
+    body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.013) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.013) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+
+    /* ════ LEFT PANEL ════ */
+    .auth-left{flex:1;min-height:100vh;background:radial-gradient(ellipse 70% 50% at 30% 40%,rgba(184,131,74,.10) 0%,transparent 60%),radial-gradient(ellipse 50% 60% at 70% 70%,rgba(46,184,197,.05) 0%,transparent 55%),linear-gradient(145deg,#0a0d15 0%,#111825 50%,#0c1018 100%);display:flex;flex-direction:column;justify-content:space-between;padding:40px 48px;position:relative;overflow:hidden;z-index:1}
+    .auth-left::after{content:'';position:absolute;bottom:-60px;right:-40px;width:380px;height:480px;background-image:linear-gradient(rgba(184,131,74,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(184,131,74,.06) 1px,transparent 1px);background-size:32px 32px;border-radius:20px;transform:rotate(-8deg);pointer-events:none}
+    .left-brand{display:flex;align-items:center;gap:10px;position:relative;z-index:2}
+    .brand-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--copper),var(--copper-l));border-radius:10px;display:flex;align-items:center;justify-content:center}
+    .brand-icon svg{width:20px;height:20px}
+    .brand-name{font-family:var(--font-serif);font-size:17px;font-weight:700;color:var(--white);line-height:1.15}
+    .brand-sub{font-size:9px;color:var(--t3);letter-spacing:.13em;text-transform:uppercase;margin-top:4px}
+    .left-hero{position:relative;z-index:2}
+    .left-tag{display:inline-flex;align-items:center;gap:7px;background:var(--copper-dim);border:1px solid rgba(184,131,74,.2);border-radius:40px;padding:5px 14px;font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--copper-l);margin-bottom:20px}
+    .left-tag-dot{width:5px;height:5px;border-radius:50%;background:var(--copper);animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{box-shadow:0 0 0 3px rgba(184,131,74,.2)}50%{box-shadow:0 0 0 6px rgba(184,131,74,.04)}}
+    .left-title{font-family:var(--font-serif);font-size:clamp(36px,4vw,54px);font-weight:700;color:var(--white);letter-spacing:-.025em;line-height:1.0;margin-bottom:16px}
+    .left-title em{font-style:italic;color:var(--copper-l)}
+    .left-desc{font-size:14px;color:var(--t2);line-height:1.75;max-width:360px}
+    .left-stats{display:flex;gap:0;border-top:1px solid var(--border);padding-top:24px;margin-top:32px}
+    .left-stat{flex:1;padding-right:20px;border-right:1px solid var(--border)}
+    .left-stat:last-child{border-right:none;padding-right:0;padding-left:20px}
+    .left-stat:not(:first-child):not(:last-child){padding:0 20px}
+    .ls-val{font-family:var(--font-serif);font-size:28px;font-weight:700;color:var(--copper-l);letter-spacing:-.02em;line-height:1}
+    .ls-lbl{font-size:10px;color:var(--t2);margin-top:3px}
+    .left-website{position:relative;z-index:2}
+    .ws-link{display:inline-flex;align-items:center;gap:8px;background:var(--ink-2);border:1px solid var(--border-2);border-radius:var(--r);padding:10px 16px;font-size:12.5px;font-weight:500;color:var(--t2);text-decoration:none;transition:all .2s}
+    .ws-link:hover{border-color:var(--copper-dim);color:var(--copper-l);background:var(--copper-dim)}
+
+    /* ════ RIGHT PANEL ════ */
+    .auth-right{width:490px;min-width:490px;background:var(--ink-2);border-left:1px solid var(--border);display:flex;flex-direction:column;justify-content:center;padding:48px 44px;position:relative;z-index:1;overflow-y:auto}
+    .auth-tab-row{display:flex;gap:4px;background:var(--ink-3);border-radius:10px;padding:4px;margin-bottom:28px}
+    .auth-tab{flex:1;padding:9px;border-radius:7px;font-size:13px;font-weight:500;color:var(--t2);background:transparent;border:none;cursor:pointer;font-family:var(--font-sans);transition:all .2s}
+    .auth-tab.active{background:var(--ink);color:var(--t1);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+    .auth-title{font-family:var(--font-serif);font-size:26px;font-weight:700;color:var(--white);letter-spacing:-.02em;margin-bottom:5px}
+    .auth-sub{font-size:12.5px;color:var(--t2);margin-bottom:22px;line-height:1.5}
+    .afield{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+    .afield label{font-size:9.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--t2)}
+    .afield input,.afield select{background:var(--ink-3);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;font-size:13px;color:var(--t1);font-family:var(--font-sans);outline:none;transition:border-color .2s,box-shadow .2s;appearance:none;width:100%}
+    .afield input:focus,.afield select:focus{border-color:var(--copper);box-shadow:0 0 0 3px var(--copper-dim)}
+    .afield input::placeholder{color:var(--t3)}
+    .afield select option{background:var(--ink-3)}
+    .req{color:var(--copper);margin-left:3px}
+    .role-select-wrap{position:relative}
+    .role-select-wrap select{padding-right:36px;cursor:pointer}
+    .role-select-wrap::after{content:'▾';position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--t2);font-size:12px;pointer-events:none}
+    .role-preview{display:none;margin-top:6px;padding:7px 11px;background:var(--ink-4);border:1px solid var(--border);border-radius:6px;font-size:11.5px;color:var(--t2);align-items:center;gap:7px}
+    .role-preview.show{display:flex}
+    .role-preview-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+    .pwd-wrap{position:relative}
+    .pwd-wrap input{padding-right:42px}
+    .pwd-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--t2);cursor:pointer;font-size:15px;line-height:1;transition:color .15s}
+    .pwd-toggle:hover{color:var(--copper-l)}
+    .arow{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+    .auth-submit{width:100%;padding:12px;background:linear-gradient(135deg,var(--copper),var(--copper-l));color:var(--ink);font-weight:700;font-size:13.5px;border:none;border-radius:var(--r);font-family:var(--font-sans);cursor:pointer;letter-spacing:.03em;transition:opacity .2s,transform .1s;margin-top:6px}
+    .auth-submit:hover{opacity:.9}.auth-submit:active{transform:scale(.98)}.auth-submit:disabled{opacity:.5;cursor:not-allowed}
+    .auth-msg{padding:10px 13px;border-radius:var(--rs);font-size:12.5px;margin-top:10px;display:none}
+    .auth-msg.ok{background:var(--green-bg);color:var(--green);border:1px solid rgba(62,207,142,.2);display:block}
+    .auth-msg.err{background:var(--red-bg);color:var(--red);border:1px solid rgba(240,96,96,.2);display:block}
+    .auth-switch{text-align:center;font-size:12.5px;color:var(--t2);margin-top:16px}
+    .auth-switch a{color:var(--copper-l);font-weight:500;text-decoration:none;cursor:pointer;transition:color .15s}
+    .auth-switch a:hover{text-decoration:underline}
+    .auth-terms{font-size:11px;color:var(--t3);text-align:center;margin-top:10px;line-height:1.6}
+    .auth-terms a{color:var(--t2);text-decoration:underline}
+    .auth-panel{animation:panelIn .3s ease both}
+    @keyframes panelIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+    @media(max-width:900px){.auth-left{display:none}.auth-right{width:100%;min-width:unset;border-left:none}}
+    @media(max-width:480px){.auth-right{padding:32px 20px}.arow{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+
+  <!-- LEFT PANEL -->
+  <div class="auth-left">
+    <div class="left-brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 20 20" fill="none">
+          <path d="M10 2L18 6.5V13.5L10 18L2 13.5V6.5Z" stroke="#0c0f18" stroke-width="1.5"/>
+          <path d="M10 5.5L15 8.5V12.5L10 15.5L5 12.5V8.5Z" fill="#0c0f18" opacity=".4"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">Meridian<br>Properties</div>
+        <div class="brand-sub">Agency Management</div>
+      </div>
+    </div>
+
+    <div class="left-hero">
+      <div class="left-tag"><div class="left-tag-dot"></div>Nairobi's Premier Agency</div>
+      <h1 class="left-title">Manage Every<br>Property with<br><em>Precision</em></h1>
+      <p class="left-desc">The Meridian Properties platform gives your team full control over units, tenants, payments and maintenance — all in one place.</p>
+      <div class="left-stats">
+        <div class="left-stat"><div class="ls-val">6</div><div class="ls-lbl">Properties</div></div>
+        <div class="left-stat"><div class="ls-val">280+</div><div class="ls-lbl">Residents</div></div>
+        <div class="left-stat"><div class="ls-val">98%</div><div class="ls-lbl">Satisfaction</div></div>
+      </div>
+    </div>
+
+    <div class="left-website">
+      <a href="index.html" class="ws-link" target="_blank">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M7 1C5.5 3 5 5 5 7s.5 4 2 6M7 1c1.5 2 2 4 2 6s-.5 4-2 6M1 7h12" stroke="currentColor" stroke-width="1.3"/></svg>
+        Visit Haven Homes Website
+      </a>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="auth-right">
+    <div class="auth-tab-row">
+      <button class="auth-tab active" id="tab-login"  onclick="switchTab('login')">Sign In</button>
+      <button class="auth-tab"        id="tab-signup" onclick="switchTab('signup')">Create Account</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="panel-login" class="auth-panel">
+      <div class="auth-title">Welcome back</div>
+      <div class="auth-sub">Sign in to your Meridian Properties account.</div>
+
+      <div class="afield">
+        <label>Email Address <span class="req">*</span></label>
+        <input type="email" id="l-email" placeholder="you@meridian.com" autocomplete="email"/>
+      </div>
+      <div class="afield">
+        <label>Password <span class="req">*</span></label>
+        <div class="pwd-wrap">
+          <input type="password" id="l-password" placeholder="Your password" autocomplete="current-password"/>
+          <button type="button" class="pwd-toggle" onclick="togglePwd('l-password',this)">👁</button>
+        </div>
+      </div>
+      <div class="afield">
+        <label>Role <span class="req">*</span></label>
+        <div class="role-select-wrap">
+          <select id="l-role" onchange="updateRolePreview('l','login')">
+            <option value="">— Select your role —</option>
+            <option value="agency-director">🏢 Agency Director</option>
+            <option value="property-manager">🗝 Property Manager</option>
+            <option value="finance-officer">💰 Finance Officer</option>
+            <option value="maintenance-staff">🔧 Maintenance Staff</option>
+            <option value="leasing-agent">📋 Leasing Agent</option>
+            <option value="tenant">🏠 Tenant</option>
+            <option value="auditor">📊 Auditor / Viewer</option>
+          </select>
+        </div>
+        <div class="role-preview" id="l-role-preview">
+          <div class="role-preview-dot" id="l-role-dot"></div>
+          <span id="l-role-desc"></span>
+        </div>
+      </div>
+
+      <button class="auth-submit" id="login-btn" onclick="handleLogin()">Sign In →</button>
+      <div class="auth-msg" id="login-msg"></div>
+      <div class="auth-switch">Don't have an account? <a onclick="switchTab('signup')">Create one</a></div>
+    </div>
+
+    <!-- SIGNUP -->
+    <div id="panel-signup" class="auth-panel" style="display:none">
+      <div class="auth-title">Create account</div>
+      <div class="auth-sub">All fields marked <span style="color:var(--copper)">*</span> are required.</div>
+
+      <div class="arow">
+        <div class="afield"><label>First Name <span class="req">*</span></label><input type="text" id="s-first" placeholder="James"/></div>
+        <div class="afield"><label>Last Name <span class="req">*</span></label><input type="text" id="s-last" placeholder="Kariuki"/></div>
+      </div>
+      <div class="afield"><label>Email Address <span class="req">*</span></label><input type="email" id="s-email" placeholder="you@meridian.com"/></div>
+      <div class="afield"><label>Phone Number <span class="req">*</span></label><input type="tel" id="s-phone" placeholder="+254 7xx xxx xxx"/></div>
+
+      <div class="afield">
+        <label>Role <span class="req">*</span></label>
+        <div class="role-select-wrap">
+          <select id="s-role" onchange="updateRolePreview('s','signup')">
+            <option value="">— Select your role —</option>
+            <option value="agency-director">🏢 Agency Director</option>
+            <option value="property-manager">🗝 Property Manager</option>
+            <option value="finance-officer">💰 Finance Officer</option>
+            <option value="maintenance-staff">🔧 Maintenance Staff</option>
+            <option value="leasing-agent">📋 Leasing Agent</option>
+            <option value="tenant">🏠 Tenant</option>
+            <option value="auditor">📊 Auditor / Viewer</option>
+          </select>
+        </div>
+        <div class="role-preview" id="s-role-preview">
+          <div class="role-preview-dot" id="s-role-dot"></div>
+          <span id="s-role-desc"></span>
+        </div>
+      </div>
+
+      <div class="afield">
+        <label>Password <span class="req">*</span></label>
+        <div class="pwd-wrap">
+          <input type="password" id="s-password" placeholder="Min. 8 characters"/>
+          <button type="button" class="pwd-toggle" onclick="togglePwd('s-password',this)">👁</button>
+        </div>
+      </div>
+      <div class="afield">
+        <label>Confirm Password <span class="req">*</span></label>
+        <div class="pwd-wrap">
+          <input type="password" id="s-confirm" placeholder="Repeat your password"/>
+          <button type="button" class="pwd-toggle" onclick="togglePwd('s-confirm',this)">👁</button>
+        </div>
+      </div>
+
+      <button class="auth-submit" id="signup-btn" onclick="handleSignup()">Create Account →</button>
+      <div class="auth-msg" id="signup-msg"></div>
+      <div class="auth-terms">By creating an account you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.</div>
+      <div class="auth-switch">Already have an account? <a onclick="switchTab('login')">Sign in</a></div>
+    </div>
+
+  </div>
+
+  <script>
+    const API = 'http://localhost:3000';
+
+    /* ════ ROLE META ════ */
+    const ROLES = {
+      'agency-director':  { color:'#d4a46a', desc:'Full access — all properties, users and financials.' },
+      'property-manager': { color:'#2eb8c5', desc:'Manage units, tenants and maintenance requests.' },
+      'finance-officer':  { color:'#3ecf8e', desc:'Access payments, invoices and financial reports.' },
+      'maintenance-staff':{ color:'#f5a623', desc:'View and update maintenance work orders.' },
+      'leasing-agent':    { color:'#8b8ff5', desc:'Handle viewings, applications and leases.' },
+      'tenant':           { color:'#48c78e', desc:'View your unit details and raise maintenance requests.' },
+      'auditor':          { color:'#7a83a0', desc:'Read-only access to reports and dashboards.' },
+    };
+
+    /* ════ TAB SWITCH ════ */
+    function switchTab(tab) {
+      ['login','signup'].forEach(t => {
+        const isActive = t === tab;
+        document.getElementById(`tab-${t}`).classList.toggle('active', isActive);
+        const panel = document.getElementById(`panel-${t}`);
+        panel.style.display = isActive ? 'block' : 'none';
+        if (isActive) {
+          panel.classList.remove('auth-panel');
+          void panel.offsetWidth;
+          panel.classList.add('auth-panel');
+        }
+      });
+    }
+
+    /* ════ ROLE PREVIEW ════ */
+    function updateRolePreview(prefix) {
+      const val     = document.getElementById(`${prefix}-role`).value;
+      const preview = document.getElementById(`${prefix}-role-preview`);
+      if (!val || !ROLES[val]) { preview.classList.remove('show'); return; }
+      document.getElementById(`${prefix}-role-dot`).style.background = ROLES[val].color;
+      document.getElementById(`${prefix}-role-desc`).textContent = ROLES[val].desc;
+      preview.classList.add('show');
+    }
+
+    /* ════ PASSWORD TOGGLE ════ */
+    function togglePwd(id, btn) {
+      const el = document.getElementById(id);
+      const show = el.type === 'password';
+      el.type = show ? 'text' : 'password';
+      btn.textContent = show ? '🙈' : '👁';
+    }
+
+    /* ════ SHOW MESSAGE ════ */
+    function showMsg(id, text, type) {
+      const el = document.getElementById(id);
+      el.textContent = text;
+      el.className = `auth-msg ${type}`;
+      if (type === 'ok') setTimeout(() => { el.textContent=''; el.className='auth-msg'; }, 4000);
+    }
+
+    function setLoading(btnId, loading, defaultText) {
+      const btn = document.getElementById(btnId);
+      btn.disabled = loading;
+      btn.textContent = loading ? 'Please wait...' : defaultText;
+    }
+
+    /* ════ LOGIN — calls MongoDB API ════ */
+    async function handleLogin() {
+      const email    = document.getElementById('l-email').value.trim();
+      const password = document.getElementById('l-password').value;
+      const role     = document.getElementById('l-role').value;
+
+      if (!email)    { showMsg('login-msg','❌ Please enter your email address.','err'); return; }
+      if (!password) { showMsg('login-msg','❌ Please enter your password.','err'); return; }
+      if (!role)     { showMsg('login-msg','❌ Please select your role to continue.','err'); return; }
+
+      setLoading('login-btn', true, 'Sign In →');
+
+      try {
+        const res  = await fetch(`${API}/auth/login`, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ email, password, role }),
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          // Save session — contains full user object from MongoDB + JWT for authenticated requests
+          sessionStorage.setItem('mp_session', JSON.stringify({ ...data.user, token: data.token, loggedIn: true }));
+          showMsg('login-msg', `✅ Welcome back, ${data.user.firstName}! Redirecting...`, 'ok');
+          setTimeout(() => window.location.href = 'dashboard.html', 1200);
+        } else {
+          showMsg('login-msg', `❌ ${data.message}`, 'err');
+          setLoading('login-btn', false, 'Sign In →');
+        }
+      } catch {
+        showMsg('login-msg', '❌ Cannot reach server. Make sure npm run dev is running.', 'err');
+        setLoading('login-btn', false, 'Sign In →');
+      }
+    }
+
+    /* ════ SIGNUP — saves to MongoDB ════ */
+    async function handleSignup() {
+      const first    = document.getElementById('s-first').value.trim();
+      const last     = document.getElementById('s-last').value.trim();
+      const email    = document.getElementById('s-email').value.trim();
+      const phone    = document.getElementById('s-phone').value.trim();
+      const role     = document.getElementById('s-role').value;
+      const password = document.getElementById('s-password').value;
+      const confirm  = document.getElementById('s-confirm').value;
+
+      if (!first || !last)       { showMsg('signup-msg','❌ Please enter your full name.','err'); return; }
+      if (!email)                { showMsg('signup-msg','❌ Please enter your email address.','err'); return; }
+      if (!phone)                { showMsg('signup-msg','❌ Please enter your phone number.','err'); return; }
+      if (!role)                 { showMsg('signup-msg','❌ Please select your role — it is required.','err'); return; }
+      if (password.length < 8)  { showMsg('signup-msg','❌ Password must be at least 8 characters.','err'); return; }
+      if (password !== confirm)  { showMsg('signup-msg','❌ Passwords do not match.','err'); return; }
+
+      setLoading('signup-btn', true, 'Create Account →');
+
+      try {
+        const res  = await fetch(`${API}/auth/register`, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ firstName: first, lastName: last, email, phone, role, password }),
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          // Save session immediately so they're logged in — include JWT for authenticated requests
+          sessionStorage.setItem('mp_session', JSON.stringify({ ...data.user, token: data.token, loggedIn: true }));
+          showMsg('signup-msg', `✅ Account created! Welcome, ${first}. Redirecting...`, 'ok');
+          setTimeout(() => window.location.href = 'dashboard.html', 1400);
+        } else {
+          showMsg('signup-msg', `❌ ${data.message}`, 'err');
+          setLoading('signup-btn', false, 'Create Account →');
+        }
+      } catch {
+        showMsg('signup-msg', '❌ Cannot reach server. Make sure npm run dev is running.', 'err');
+        setLoading('signup-btn', false, 'Create Account →');
+      }
+    }
+
+    /* ════ ENTER KEY ════ */
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Enter') return;
+      const loginVisible = document.getElementById('panel-login').style.display !== 'none';
+      if (loginVisible) handleLogin(); else handleSignup();
+    });
+
+    /* ════ AUTO-REDIRECT IF ALREADY LOGGED IN ════ */
+    const sess = JSON.parse(sessionStorage.getItem('mp_session') || '{}');
+    if (sess.loggedIn) window.location.href = 'dashboard.html';
+  </script>
+</body>
+</html>

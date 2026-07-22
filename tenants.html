@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Meridian Properties — Tenants</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --ink:#0c0f18;--ink-2:#131722;--ink-3:#1a2030;--ink-4:#222840;
+      --copper:#b8834a;--copper-l:#d4a46a;--copper-dim:rgba(184,131,74,.14);
+      --white:#ffffff;--t1:#edf0f8;--t2:#7a83a0;--t3:#3a4260;
+      --border:rgba(255,255,255,.06);--border-2:rgba(255,255,255,.10);
+      --green:#3ecf8e;--green-bg:rgba(62,207,142,.12);
+      --amber:#f5a623;--amber-bg:rgba(245,166,35,.12);
+      --red:#f06060;--red-bg:rgba(240,96,96,.12);
+      --blue:#4a9ef5;--blue-bg:rgba(74,158,245,.12);
+      --harbor:#2eb8c5;--metro:#8b8ff5;--sunset:#f07040;
+      --downtown:#4a9ef5;--river:#48c78e;--greenwood:#78c44a;
+      --r:14px;--rs:8px;--shadow:0 16px 48px rgba(0,0,0,.45);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:'Outfit',sans-serif;background:var(--ink);color:var(--t1);min-height:100vh;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.014) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.014) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+    body::after{content:'';position:fixed;top:-180px;right:-140px;width:560px;height:560px;background:radial-gradient(circle,rgba(184,131,74,.07) 0%,transparent 70%);pointer-events:none;z-index:0}
+
+    /* ══ LAYOUT ══ */
+    .shell{display:grid;grid-template-columns:248px 1fr;min-height:100vh;position:relative;z-index:1}
+
+    /* ══ SIDEBAR ══ */
+    .sidebar{background:var(--ink-2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+    .sb-brand{padding:22px 20px 16px;border-bottom:1px solid var(--border)}
+    .brand-row{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+    .emblem{width:34px;height:34px;background:linear-gradient(135deg,var(--copper),var(--copper-l));border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .emblem svg{width:18px;height:18px}
+    .brand-name{font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:700;color:var(--white);line-height:1.15}
+    .brand-sub{font-size:9px;color:var(--t3);letter-spacing:.14em;text-transform:uppercase;margin-top:4px}
+    .sb-nav{padding:12px;flex:1}
+    .ng{font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--t3);padding:10px 8px 4px}
+    .ni{display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:var(--rs);font-size:13px;color:var(--t2);cursor:pointer;margin-bottom:1px;transition:all .15s;text-decoration:none;position:relative}
+    .ni:hover{background:rgba(255,255,255,.04);color:var(--t1)}
+    .ni.active{background:var(--copper-dim);color:var(--copper-l);font-weight:500}
+    .ni.active::before{content:'';position:absolute;left:0;top:25%;bottom:25%;width:2px;background:var(--copper);border-radius:2px}
+    .ni-ico{width:14px;height:14px;flex-shrink:0;opacity:.65}
+    .ni.active .ni-ico{opacity:1}
+    .nbadge{margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:600;border-radius:20px;padding:1px 6px}
+    .sb-foot{padding:13px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px}
+    .sav{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--copper),var(--copper-l));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--ink);overflow:hidden;flex-shrink:0}
+    .sav img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+    .sun{font-size:12.5px;font-weight:500;color:var(--t1)}
+    .sur{font-size:10px;color:var(--t2);margin-top:1px}
+
+    /* ══ TOPBAR ══ */
+    .topbar{background:var(--ink-2);border-bottom:1px solid var(--border);padding:13px 26px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:30}
+    .tb-left{display:flex;align-items:center;gap:14px}
+    .tb-back{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:var(--rs);border:1px solid var(--border-2);font-size:12px;color:var(--t2);text-decoration:none;transition:all .15s;font-family:'Outfit',sans-serif}
+    .tb-back:hover{color:var(--copper-l);border-color:var(--copper-dim);background:var(--copper-dim)}
+    .tb-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--white)}
+    .tb-sub{font-size:11.5px;color:var(--t2);margin-top:1px}
+    .tb-r{display:flex;align-items:center;gap:9px}
+    .lc{font-size:11px;color:var(--t2);display:flex;align-items:center;gap:5px}
+    .ld{width:6px;height:6px;border-radius:50%;background:var(--green);animation:glow 2s infinite}
+    @keyframes glow{0%,100%{box-shadow:0 0 0 3px var(--green-bg)}50%{box-shadow:0 0 0 6px rgba(62,207,142,.04)}}
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--rs);border:1px solid var(--border-2);font-size:12px;font-weight:500;color:var(--t2);background:transparent;cursor:pointer;transition:all .15s;font-family:'Outfit',sans-serif}
+    .btn:hover{border-color:var(--copper-dim);color:var(--t1);background:var(--copper-dim)}
+    .btn.cta{background:var(--copper);border-color:var(--copper);color:var(--ink);font-weight:600}
+    .btn.cta:hover{background:var(--copper-l)}
+
+    /* ══ CONN BAR ══ */
+    .conn{display:flex;align-items:center;gap:9px;padding:8px 14px;background:var(--ink-3);border-bottom:1px solid var(--border);font-size:11.5px;color:var(--t2)}
+    .cdot{width:7px;height:7px;border-radius:50%;background:var(--t3);flex-shrink:0;transition:all .3s}
+    .cdot.live{background:var(--green);box-shadow:0 0 0 3px var(--green-bg);animation:glow 2s infinite}
+    .cdot.dead{background:var(--red);box-shadow:0 0 0 3px var(--red-bg)}
+
+    /* ══ MAIN ══ */
+    .main{padding:22px 26px 48px}
+    .slbl{font-size:9.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--t3);margin:26px 0 13px}
+    .slbl:first-child{margin-top:0}
+
+    /* ══ STATS ROW ══ */
+    .stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:11px;margin-bottom:8px}
+    .sc{background:var(--ink-2);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;position:relative;overflow:hidden;animation:up .5s ease both}
+    .sc:nth-child(1){animation-delay:.04s}.sc:nth-child(2){animation-delay:.08s}.sc:nth-child(3){animation-delay:.12s}.sc:nth-child(4){animation-delay:.16s}.sc:nth-child(5){animation-delay:.20s}
+    .sc::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:var(--r) var(--r) 0 0}
+    .sc.g::after{background:var(--green)}.sc.c::after{background:var(--copper)}.sc.b::after{background:var(--blue)}.sc.a::after{background:var(--amber)}.sc.r::after{background:var(--red)}
+    .sc-ico{font-size:18px;margin-bottom:9px}
+    .sc-lbl{font-size:10.5px;color:var(--t2);font-weight:500;margin-bottom:4px}
+    .sc-val{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;color:var(--white);letter-spacing:-.03em;line-height:1}
+    .sc-sub{font-size:10.5px;margin-top:5px}
+    .up{color:var(--green)}.dn{color:var(--red)}.nu{color:var(--t2)}
+    @keyframes up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+    /* ══ ALERTS STRIP ══ */
+    .alert-strip{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+    .alert-tag{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:var(--rs);font-size:11.5px;font-weight:500;cursor:pointer;transition:all .2s;border:1px solid}
+    .alert-tag.warn{background:var(--amber-bg);color:var(--amber);border-color:rgba(245,166,35,.25)}
+    .alert-tag.danger{background:var(--red-bg);color:var(--red);border-color:rgba(240,96,96,.25)}
+    .alert-tag.info{background:var(--blue-bg);color:var(--blue);border-color:rgba(74,158,245,.25)}
+    .alert-tag:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
+
+    /* ══ TOOLBAR ══ */
+    .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+    .search-wrap{position:relative;flex:1;min-width:220px}
+    .search-ico{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none}
+    .search-input{width:100%;background:var(--ink-2);border:1px solid var(--border);border-radius:var(--rs);padding:9px 12px 9px 34px;font-size:13px;color:var(--t1);font-family:'Outfit',sans-serif;outline:none;transition:border-color .2s}
+    .search-input:focus{border-color:var(--copper)}
+    .search-input::placeholder{color:var(--t3)}
+    .filter-select{background:var(--ink-2);border:1px solid var(--border);border-radius:var(--rs);padding:9px 28px 9px 12px;font-size:12.5px;color:var(--t1);font-family:'Outfit',sans-serif;outline:none;cursor:pointer;appearance:none;transition:border-color .2s;min-width:150px;position:relative}
+    .filter-select:focus{border-color:var(--copper)}
+    .filter-select option{background:var(--ink-3)}
+    .select-wrap{position:relative}
+    .select-wrap::after{content:'▾';position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--t2);font-size:11px;pointer-events:none}
+
+    /* View toggle */
+    .view-toggle{display:flex;background:var(--ink-3);border:1px solid var(--border);border-radius:var(--rs);padding:3px;gap:2px}
+    .vt-btn{width:30px;height:28px;border-radius:6px;border:none;background:transparent;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .15s;color:var(--t2)}
+    .vt-btn.active{background:var(--ink);color:var(--t1)}
+
+    /* ══ TENANT GRID (card view) ══ */
+    .tenant-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+    .tc{background:var(--ink-2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:all .22s;animation:up .5s ease both;cursor:pointer;position:relative}
+    .tc:hover{transform:translateY(-3px);border-color:var(--border-2);box-shadow:var(--shadow)}
+    .tc-top{padding:18px 18px 14px;display:flex;align-items:flex-start;gap:13px;border-bottom:1px solid var(--border)}
+    .tc-avatar{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0;position:relative}
+    .tc-avatar-status{position:absolute;bottom:0;right:0;width:13px;height:13px;border-radius:50%;border:2px solid var(--ink-2)}
+    .tc-info{flex:1;min-width:0}
+    .tc-name{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;color:var(--white);line-height:1.2}
+    .tc-unit{font-size:11.5px;color:var(--t2);margin-top:2px}
+    .tc-prop{font-size:11px;margin-top:3px;display:flex;align-items:center;gap:4px}
+    .tc-prop-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+    .tc-body{padding:14px 18px}
+    .tc-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px}
+    .tc-row:last-child{border-bottom:none}
+    .tc-row-lbl{color:var(--t2)}
+    .tc-row-val{font-weight:500;color:var(--t1)}
+    .tc-foot{padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:7px}
+    .pill{display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 9px;border-radius:20px}
+    .p-green{background:var(--green-bg);color:var(--green)}
+    .p-amber{background:var(--amber-bg);color:var(--amber)}
+    .p-red{background:var(--red-bg);color:var(--red)}
+    .p-blue{background:var(--blue-bg);color:var(--blue)}
+    .p-copper{background:var(--copper-dim);color:var(--copper-l)}
+    .act-btn{border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;background:transparent;flex:1;text-align:center}
+    .edit-btn{color:var(--blue);border-color:rgba(74,158,245,.25)}
+    .edit-btn:hover{background:var(--blue-bg);border-color:var(--blue)}
+    .del-btn{color:var(--red);border-color:rgba(240,96,96,.25)}
+    .del-btn:hover{background:var(--red-bg);border-color:var(--red)}
+
+    /* ══ TABLE VIEW ══ */
+    .tenant-table-wrap{background:var(--ink-2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;animation:up .5s ease both}
+    .ttable{width:100%;border-collapse:collapse}
+    .ttable th{font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--t3);border-bottom:1px solid var(--border);padding:0 14px 10px;text-align:left;white-space:nowrap}
+    .ttable td{font-size:12.5px;color:var(--t1);padding:12px 14px;border-bottom:1px solid var(--border)}
+    .ttable tbody tr:last-child td{border-bottom:none}
+    .ttable tbody tr{transition:background .12s;cursor:pointer}
+    .ttable tbody tr:hover td{background:rgba(255,255,255,.025)}
+    .ttable-wrap-inner{padding:4px 0 2px}
+    .t-cell{display:flex;align-items:center;gap:9px}
+    .t-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+    .t-name{font-weight:500}
+    .t-unit{font-size:10.5px;color:var(--t2);margin-top:1px}
+    .prop-badge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px}
+    .prop-dot{width:6px;height:6px;border-radius:50%}
+    .btns{display:flex;gap:5px}
+
+    /* ══ EMPTY ══ */
+    .empty{text-align:center;padding:48px 20px;color:var(--t3)}
+    .eico{font-size:40px;margin-bottom:10px}
+    .skel{height:44px;background:linear-gradient(90deg,var(--ink-3) 25%,var(--ink-4) 50%,var(--ink-3) 75%);background-size:200% 100%;animation:shim 1.4s infinite;border-radius:var(--rs);margin-bottom:7px}
+    @keyframes shim{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+    /* ══ TENANT DETAIL MODAL ══ */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(5px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+    .overlay.open{display:flex}
+    .modal{background:var(--ink-2);border:1px solid var(--border-2);border-radius:20px;width:520px;max-width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.55);animation:mIn .25s ease both}
+    @keyframes mIn{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+    .m-head{padding:22px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px}
+    .m-av{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;flex-shrink:0}
+    .m-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--white)}
+    .m-sub{font-size:12px;color:var(--t2);margin-top:2px}
+    .m-close{margin-left:auto;background:transparent;border:1px solid var(--border);color:var(--t2);width:30px;height:30px;border-radius:7px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:'Outfit',sans-serif;flex-shrink:0}
+    .m-close:hover{background:var(--red-bg);color:var(--red);border-color:var(--red)}
+    .m-body{padding:20px 24px}
+    .m-section{margin-bottom:20px}
+    .m-section-title{font-size:9.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--copper);margin-bottom:12px}
+    .m-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .m-field{background:var(--ink-3);border-radius:var(--rs);padding:11px 13px}
+    .m-field-lbl{font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:4px}
+    .m-field-val{font-size:13px;color:var(--t1);font-weight:500}
+    .m-field.full{grid-column:span 2}
+
+    /* Edit form inside modal */
+    .mfld{display:flex;flex-direction:column;gap:5px;margin-bottom:11px}
+    .mfld label{font-size:9.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--t2)}
+    .mfld input,.mfld select{background:var(--ink-3);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;font-size:13px;color:var(--t1);font-family:'Outfit',sans-serif;outline:none;transition:border-color .2s;appearance:none;width:100%}
+    .mfld input:focus,.mfld select:focus{border-color:var(--copper)}
+    .mfld input::placeholder{color:var(--t3)}
+    .mfld select option{background:var(--ink-3)}
+    .mrow{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+    .mrow.full{grid-template-columns:1fr}
+    .m-btns{display:flex;gap:9px;padding:0 24px 22px}
+    .m-save{flex:1;padding:11px;background:linear-gradient(135deg,var(--copper),var(--copper-l));color:var(--ink);border:none;border-radius:var(--rs);font-size:13px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;transition:opacity .2s}
+    .m-save:hover{opacity:.9}
+    .m-cancel{padding:11px 16px;background:transparent;border:1px solid var(--border-2);color:var(--t2);border-radius:var(--rs);font-size:13px;font-family:'Outfit',sans-serif;cursor:pointer;transition:all .15s}
+    .m-cancel:hover{border-color:var(--red);color:var(--red)}
+    .m-msg{padding:9px 12px;border-radius:var(--rs);font-size:12px;margin:0 24px 14px;display:none}
+    .m-msg.ok{background:var(--green-bg);color:var(--green);border:1px solid rgba(62,207,142,.2);display:block}
+    .m-msg.err{background:var(--red-bg);color:var(--red);border:1px solid rgba(240,96,96,.2);display:block}
+
+    /* ══ FOOTER ══ */
+    .dash-footer{padding:14px 26px;background:var(--ink-2);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--t3);flex-wrap:wrap;gap:8px}
+    .dash-footer a{color:var(--t3);text-decoration:none;transition:color .15s}
+    .dash-footer a:hover{color:var(--copper-l)}
+    .dash-footer strong{color:var(--copper);font-weight:600}
+
+    /* ══ RESPONSIVE ══ */
+    @media(max-width:1100px){.tenant-grid{grid-template-columns:repeat(2,1fr)}.stats-row{grid-template-columns:repeat(3,1fr)}}
+    @media(max-width:900px){.shell{grid-template-columns:1fr}.sidebar{display:none}}
+    @media(max-width:600px){.tenant-grid{grid-template-columns:1fr}.stats-row{grid-template-columns:repeat(2,1fr)}.main{padding:14px}}
+  </style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ════ SIDEBAR ════ -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="brand-row">
+        <div class="emblem">
+          <svg viewBox="0 0 20 20" fill="none">
+            <path d="M10 2L18 6.5V13.5L10 18L2 13.5V6.5Z" stroke="#0c0f18" stroke-width="1.5"/>
+            <path d="M10 5.5L15 8.5V12.5L10 15.5L5 12.5V8.5Z" fill="#0c0f18" opacity=".35"/>
+          </svg>
+        </div>
+        <div><div class="brand-name">Meridian<br>Properties</div></div>
+      </div>
+      <div class="brand-sub">Agency Management Portal</div>
+    </div>
+    <nav class="sb-nav">
+      <div class="ng">Agency</div>
+      <a class="ni" href="dashboard.html">
+        <svg class="ni-ico" viewBox="0 0 15 15" fill="currentColor"><rect x="1" y="1" width="5.5" height="5.5" rx="1"/><rect x="8.5" y="1" width="5.5" height="5.5" rx="1"/><rect x="1" y="8.5" width="5.5" height="5.5" rx="1"/><rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1"/></svg>
+        Overview
+      </a>
+      <a class="ni" href="analytics.html">
+        <svg class="ni-ico" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><polyline points="1.5,12 4.5,7.5 7.5,9.5 10.5,4 13.5,6"/></svg>
+        Analytics
+      </a>
+      <div class="ng">Operations</div>
+      <a class="ni active" href="tenants.html">
+        <svg class="ni-ico" viewBox="0 0 15 15" fill="currentColor"><circle cx="5" cy="4.5" r="2.3"/><path d="M1 13c0-2.5 1.8-4 4-4s4 1.5 4 4"/><circle cx="11" cy="5" r="1.8"/><path d="M13.5 13c0-2-1.2-3.2-2.8-3.5"/></svg>
+        Tenants
+      </a>
+      <a class="ni" href="maintenance.html">
+        <svg class="ni-ico" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="7.5" cy="7.5" r="2"/><path d="M7.5 1v2M7.5 12v2M1 7.5h2M12 7.5h2"/></svg>
+        Maintenance <span class="nbadge">4</span>
+      </a>
+      <div class="ng">Finance</div>
+      <a class="ni" href="payments.html">
+        <svg class="ni-ico" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="7.5" cy="7.5" r="6.5"/><path d="M7.5 4v7M5.5 6c0-1 .9-2 2-2s2 .9 2 2-1.5 1.5-2 2-.5.9-.5 1.5"/></svg>
+        Payments <span class="nbadge">7</span>
+      </a>
+      <a class="ni" href="documents.html">
+        <svg class="ni-ico" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M2.5 13h10V5.2L9 1.5H2.5z"/><path d="M8.5 1.5V6H13"/></svg>
+        Documents
+      </a>
+    </nav>
+    <div class="sb-foot">
+      <div class="sav" id="sbAv">??</div>
+      <div><div class="sun" id="sbName">Loading...</div><div class="sur" id="sbRole">—</div></div>
+    </div>
+  </aside>
+
+  <!-- ════ MAIN PANEL ════ -->
+  <div style="display:flex;flex-direction:column;min-height:100vh">
+
+    <header class="topbar">
+      <div class="tb-left">
+        <a class="tb-back" href="dashboard.html">← Dashboard</a>
+        <div>
+          <div class="tb-title">Tenants</div>
+          <div class="tb-sub" id="tb-sub">Meridian Properties · All Buildings</div>
+        </div>
+      </div>
+      <div class="tb-r">
+        <div class="lc"><div class="ld"></div><span id="clock">--:--:--</span></div>
+        <button class="btn" onclick="loadTenants()">↺ Refresh</button>
+      </div>
+    </header>
+
+    <div class="conn">
+      <div class="cdot" id="cdot"></div>
+      <span id="ctext">Connecting...</span>
+      <span style="margin-left:auto;font-size:10.5px;color:var(--t3)" id="sync-lbl"></span>
+    </div>
+
+    <div class="main">
+
+      <!-- Stats -->
+      <div class="slbl">Tenant Overview</div>
+      <div class="stats-row">
+        <div class="sc g"><div class="sc-ico">👥</div><div class="sc-lbl">Total Tenants</div><div class="sc-val" id="s-total">—</div><div class="sc-sub up">Registered units</div></div>
+        <div class="sc c"><div class="sc-ico">✅</div><div class="sc-lbl">Active Leases</div><div class="sc-val" id="s-active">—</div><div class="sc-sub up">Occupied</div></div>
+        <div class="sc b"><div class="sc-ico">🔑</div><div class="sc-lbl">Vacant Units</div><div class="sc-val" id="s-vacant">—</div><div class="sc-sub nu">Available now</div></div>
+        <div class="sc a"><div class="sc-ico">⚠️</div><div class="sc-lbl">Overdue</div><div class="sc-val" id="s-overdue">—</div><div class="sc-sub dn">Need follow-up</div></div>
+        <div class="sc r"><div class="sc-ico">🔧</div><div class="sc-lbl">Maintenance</div><div class="sc-val" id="s-maint">—</div><div class="sc-sub dn">Under work</div></div>
+      </div>
+
+      <!-- Alert strip -->
+      <div class="alert-strip" id="alertStrip"></div>
+
+      <!-- Toolbar -->
+      <div class="slbl" style="display:flex;align-items:center;gap:10px;justify-content:space-between">
+        <span>All Tenants</span>
+        <span id="scopeLabel" style="font-size:11px;letter-spacing:.06em;text-transform:none;color:var(--copper-l);background:var(--copper-dim);padding:4px 11px;border-radius:20px;font-weight:600">🏢 All Units — Agency Wide</span>
+      </div>
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-ico">🔍</span>
+          <input class="search-input" id="searchInput" placeholder="Search by name, unit or tenant..." oninput="applyFilters()"/>
+        </div>
+        <div class="select-wrap">
+          <select class="filter-select" id="propFilter" onchange="applyFilters()">
+            <option value="">All Properties</option>
+            <option>Harbor View</option>
+            <option>Metropolitan Place</option>
+            <option>Sunset Plaza</option>
+            <option>Downtown Apartments</option>
+            <option>Riverside Residences</option>
+            <option>Greenwood Towers</option>
+          </select>
+        </div>
+        <div class="select-wrap">
+          <select class="filter-select" id="statusFilter" onchange="applyFilters()">
+            <option value="">All Statuses</option>
+            <option>Occupied</option>
+            <option>Vacant</option>
+            <option>Maintenance</option>
+            <option>New Tenant</option>
+            <option>Overdue</option>
+          </select>
+        </div>
+        <div class="view-toggle">
+          <button class="vt-btn active" id="vt-grid" onclick="switchView('grid')" title="Card view">⊞</button>
+          <button class="vt-btn" id="vt-list" onclick="switchView('list')" title="List view">☰</button>
+        </div>
+      </div>
+
+      <!-- Grid View -->
+      <div id="gridView">
+        <div class="tenant-grid" id="tenantGrid">
+          <div style="grid-column:span 3;padding:10px 0"><div class="skel"></div><div class="skel"></div><div class="skel" style="opacity:.5"></div></div>
+        </div>
+      </div>
+
+      <!-- List View -->
+      <div id="listView" style="display:none">
+        <div class="tenant-table-wrap">
+          <div class="ttable-wrap-inner" style="overflow-x:auto">
+            <table class="ttable">
+              <thead>
+                <tr>
+                  <th>Tenant</th>
+                  <th>Unit</th>
+                  <th>Property</th>
+                  <th>Floor</th>
+                  <th>Monthly Rent</th>
+                  <th>Status</th>
+                  <th>Move-in Est.</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tenantTableBody">
+                <tr><td colspan="8"><div class="skel"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result count -->
+      <div style="margin-top:12px;font-size:11.5px;color:var(--t3)" id="resultCount"></div>
+
+      <!-- Footer -->
+      <div style="margin-top:32px;padding-top:20px;border-top:1px solid var(--border)">
+        <div class="dash-footer" style="border-top:none;padding:0">
+          <span>© <span id="yr"></span> <strong>DevMinds</strong> · All rights reserved.</span>
+          <span><a href="#">Privacy Policy</a> &nbsp;·&nbsp; <a href="#">Terms of Service</a></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ TENANT DETAIL / EDIT MODAL ════ -->
+<div class="overlay" id="tenantOverlay" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+
+    <!-- View mode -->
+    <div id="modalView">
+      <div class="m-head">
+        <div class="m-av" id="mAvatar">??</div>
+        <div>
+          <div class="m-title" id="mName">—</div>
+          <div class="m-sub" id="mUnit">—</div>
+        </div>
+        <button class="m-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="m-body">
+        <div class="m-section">
+          <div class="m-section-title">Tenant Details</div>
+          <div class="m-grid">
+            <div class="m-field"><div class="m-field-lbl">Full Name</div><div class="m-field-val" id="md-name">—</div></div>
+            <div class="m-field"><div class="m-field-lbl">Unit Number</div><div class="m-field-val" id="md-unit">—</div></div>
+            <div class="m-field"><div class="m-field-lbl">Property</div><div class="m-field-val" id="md-prop">—</div></div>
+            <div class="m-field"><div class="m-field-lbl">Floor</div><div class="m-field-val" id="md-floor">—</div></div>
+            <div class="m-field"><div class="m-field-lbl">Monthly Rent</div><div class="m-field-val" id="md-rent">—</div></div>
+            <div class="m-field"><div class="m-field-lbl">Status</div><div class="m-field-val" id="md-status">—</div></div>
+            <div class="m-field full"><div class="m-field-lbl">Unit ID</div><div class="m-field-val" id="md-id" style="font-size:11px;color:var(--t2);font-family:monospace">—</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="m-btns">
+        <button class="m-cancel" onclick="closeModal()">Close</button>
+        <button class="m-save" onclick="switchToEdit()">✏️ Edit Tenant</button>
+      </div>
+    </div>
+
+    <!-- Edit mode -->
+    <div id="modalEdit" style="display:none">
+      <div class="m-head">
+        <div class="m-av" id="mAvatarEdit">??</div>
+        <div>
+          <div class="m-title">Edit Tenant</div>
+          <div class="m-sub" id="mUnitEdit">—</div>
+        </div>
+        <button class="m-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="m-body">
+        <input type="hidden" id="e-id"/>
+        <div class="mrow full"><div class="mfld"><label>Property</label><select id="e-prop">
+          <option>Harbor View</option><option>Metropolitan Place</option>
+          <option>Sunset Plaza</option><option>Downtown Apartments</option>
+          <option>Riverside Residences</option><option>Greenwood Towers</option>
+        </select></div></div>
+        <div class="mrow">
+          <div class="mfld"><label>Unit Number</label><input type="text" id="e-unit" placeholder="e.g. A-402"/></div>
+          <div class="mfld"><label>Floor</label><input type="text" id="e-floor" placeholder="e.g. 4"/></div>
+        </div>
+        <div class="mrow full"><div class="mfld"><label>Tenant Name</label><input type="text" id="e-tenant" placeholder="Full name or leave blank if vacant"/></div></div>
+        <div class="mrow">
+          <div class="mfld"><label>Monthly Rent (KES)</label><input type="number" id="e-rent" placeholder="85000"/></div>
+          <div class="mfld"><label>Status</label><select id="e-status">
+            <option>Occupied</option><option>Vacant</option>
+            <option>Maintenance</option><option>New Tenant</option><option>Overdue</option>
+          </select></div>
+        </div>
+      </div>
+      <div class="m-msg" id="editMsg"></div>
+      <div class="m-btns">
+        <button class="m-cancel" onclick="switchToView()">← Back</button>
+        <button class="m-save" onclick="saveEdit()">Save Changes →</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ════ CONFIG ════ */
+const API = 'http://localhost:3000';
+
+/* ══════════════ AUTH HELPERS ══════════════ */
+// Reads the JWT saved at login/signup
+function getToken() {
+  const raw = sessionStorage.getItem('mp_session');
+  if (!raw) return null;
+  try { return JSON.parse(raw).token || null; } catch { return null; }
+}
+
+// Wraps fetch: attaches the Bearer token automatically and bounces to
+// the sign-in page if the token is missing/expired (401 from the API)
+async function apiFetch(url, options = {}) {
+  const token = getToken();
+  const headers = { ...(options.headers || {}) };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(url, { ...options, headers });
+
+  if (res.status === 401) {
+    sessionStorage.removeItem('mp_session');
+    window.location.href = 'auth.html';
+  }
+  return res;
+}
+
+const PROPS = [
+  { name:'Harbor View',          emoji:'⚓', hex:'#2eb8c5', loc:'Mombasa Rd' },
+  { name:'Metropolitan Place',   emoji:'🏙', hex:'#8b8ff5', loc:'Upper Hill' },
+  { name:'Sunset Plaza',         emoji:'🌅', hex:'#f07040', loc:'Westlands'  },
+  { name:'Downtown Apartments',  emoji:'🌆', hex:'#4a9ef5', loc:'CBD'        },
+  { name:'Riverside Residences', emoji:'🌿', hex:'#48c78e', loc:'Parklands'  },
+  { name:'Greenwood Towers',     emoji:'🌲', hex:'#78c44a', loc:'Karen'      },
+];
+
+const PILL_MAP = {
+  'Occupied':'p-green','Vacant':'p-blue','Maintenance':'p-amber',
+  'New Tenant':'p-copper','Overdue':'p-red'
+};
+
+const STATUS_DOT = {
+  'Occupied':'#3ecf8e','Vacant':'#4a9ef5','Maintenance':'#f5a623',
+  'New Tenant':'#b8834a','Overdue':'#f06060'
+};
+
+const AV_COLORS = [
+  ['rgba(46,184,197,.22)','#2eb8c5'],['rgba(139,143,245,.22)','#8b8ff5'],
+  ['rgba(240,112,64,.22)','#f07040'],['rgba(72,199,142,.22)','#48c78e'],
+  ['rgba(184,131,74,.22)','#b8834a'],['rgba(74,158,245,.22)','#4a9ef5'],
+];
+
+/* ════ STATE ════ */
+let ALL_UNITS    = [];
+let FILTERED     = [];
+let CURRENT_VIEW = 'grid';
+let MODAL_UNIT   = null;
+
+/* ════ HELPERS ════ */
+const pi = n => PROPS.find(p => p.name === n) || { hex:'#7a83a0', emoji:'🏠', loc:'—' };
+const avColor = s => { let h=0; for(let i=0;i<s.length;i++) h=s.charCodeAt(i)+((h<<5)-h); return AV_COLORS[Math.abs(h)%AV_COLORS.length]; };
+const ini = s => (!s||s==='—') ? '?' : s.trim().split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2);
+const fmt = n => Number(n).toLocaleString();
+function fmtRev(n) {
+  if (!n||n<=0) return '—';
+  if (n>=1_000_000) return `KES ${(n/1_000_000).toFixed(2).replace(/\.?0+$/,'')}M`;
+  if (n>=1_000) return `KES ${(n/1_000).toFixed(0)}K`;
+  return `KES ${n}`;
+}
+/* Estimate move-in from createdAt */
+const moveIn = u => u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+
+/* ════ FETCH ════ */
+async function loadTenants() {
+  try {
+    const r = await apiFetch(`${API}/products`);
+    const data = await r.json();
+
+    if (!r.ok) {
+      // Real error from the server (e.g. permission issue) — surface it
+      // instead of silently falling through and rendering nothing.
+      throw new Error(data.message || 'Failed to load units.');
+    }
+
+    ALL_UNITS = data;
+    document.getElementById('cdot').className = 'cdot live';
+    document.getElementById('ctext').textContent = '✅  Live · MongoDB connected · Meridian Properties Tenants';
+    document.getElementById('sync-lbl').textContent = 'Updated ' + new Date().toLocaleTimeString();
+    renderScopeLabel();
+    renderStats();
+    renderAlerts();
+    applyFilters();
+  } catch (err) {
+    document.getElementById('cdot').className = 'cdot dead';
+    document.getElementById('ctext').textContent = `❌  ${err.message || 'Server offline — run npm run dev'}`;
+  }
+}
+
+/* ════ SCOPE LABEL ════
+   What this page shows depends on the signed-in role:
+   - management / leasing / finance / auditor → every unit, agency-wide
+   - maintenance-staff → only units currently flagged "Maintenance"
+   - tenant → only their own unit
+   The backend already filters the data server-side; this just labels
+   what's on screen so it isn't mistaken for "agency-wide" by accident. */
+function renderScopeLabel() {
+  const raw = sessionStorage.getItem('mp_session');
+  const role = raw ? (JSON.parse(raw).role || '') : '';
+  const el = document.getElementById('scopeLabel');
+  if (!el) return;
+
+  const SCOPES = {
+    'maintenance-staff': '🔧 Units Currently Under Maintenance',
+    'tenant':            '🏠 My Unit',
+  };
+  el.textContent = SCOPES[role] || '🏢 All Units — Agency Wide';
+}
+
+/* ════ STATS ════ */
+function renderStats() {
+  const occ   = ALL_UNITS.filter(u=>u.status==='Occupied'||u.status==='New Tenant').length;
+  const vac   = ALL_UNITS.filter(u=>u.status==='Vacant').length;
+  const over  = ALL_UNITS.filter(u=>u.status==='Overdue').length;
+  const maint = ALL_UNITS.filter(u=>u.status==='Maintenance').length;
+  document.getElementById('s-total').textContent   = ALL_UNITS.length;
+  document.getElementById('s-active').textContent  = occ;
+  document.getElementById('s-vacant').textContent  = vac;
+  document.getElementById('s-overdue').textContent = over;
+  document.getElementById('s-maint').textContent   = maint;
+  document.getElementById('tb-sub').textContent    = `Meridian Properties · ${ALL_UNITS.length} units · ${occ} occupied`;
+}
+
+/* ════ ALERTS ════ */
+function renderAlerts() {
+  const alerts = [];
+  const over  = ALL_UNITS.filter(u=>u.status==='Overdue');
+  const vac   = ALL_UNITS.filter(u=>u.status==='Vacant');
+  const maint = ALL_UNITS.filter(u=>u.status==='Maintenance');
+
+  if (over.length)  alerts.push({ type:'danger', icon:'💸', text:`${over.length} overdue payment${over.length>1?'s':''}`, filter:'Overdue' });
+  if (maint.length) alerts.push({ type:'warn',   icon:'🔧', text:`${maint.length} unit${maint.length>1?'s':''} under maintenance`, filter:'Maintenance' });
+  if (vac.length)   alerts.push({ type:'info',   icon:'🔑', text:`${vac.length} vacant unit${vac.length>1?'s':''} available`, filter:'Vacant' });
+
+  document.getElementById('alertStrip').innerHTML = alerts.map(a =>
+    `<div class="alert-tag ${a.type}" onclick="quickFilter('${a.filter}')">${a.icon} ${a.text} — click to filter</div>`
+  ).join('');
+}
+
+/* ════ FILTER ════ */
+function quickFilter(status) {
+  document.getElementById('statusFilter').value = status;
+  applyFilters();
+}
+
+function applyFilters() {
+  const q    = document.getElementById('searchInput').value.toLowerCase().trim();
+  const prop = document.getElementById('propFilter').value;
+  const stat = document.getElementById('statusFilter').value;
+
+  FILTERED = ALL_UNITS.filter(u => {
+    const matchQ    = !q || (u.tenant||'').toLowerCase().includes(q) || (u.name||'').toLowerCase().includes(q) || (u.property||'').toLowerCase().includes(q);
+    const matchProp = !prop || u.property === prop;
+    const matchStat = !stat || u.status   === stat;
+    return matchQ && matchProp && matchStat;
+  });
+
+  document.getElementById('resultCount').textContent =
+    `Showing ${FILTERED.length} of ${ALL_UNITS.length} units`;
+
+  if (CURRENT_VIEW === 'grid') renderGrid();
+  else renderTable();
+}
+
+/* ════ VIEW SWITCH ════ */
+function switchView(v) {
+  CURRENT_VIEW = v;
+  document.getElementById('gridView').style.display = v === 'grid' ? 'block' : 'none';
+  document.getElementById('listView').style.display = v === 'list' ? 'block' : 'none';
+  document.getElementById('vt-grid').classList.toggle('active', v === 'grid');
+  document.getElementById('vt-list').classList.toggle('active', v === 'list');
+  if (v === 'grid') renderGrid(); else renderTable();
+}
+
+/* ════ GRID RENDER ════ */
+function renderGrid() {
+  const grid = document.getElementById('tenantGrid');
+  if (FILTERED.length === 0) {
+    grid.innerHTML = `<div class="empty" style="grid-column:span 3"><div class="eico">👤</div>No tenants match your filters.</div>`;
+    return;
+  }
+  grid.innerHTML = FILTERED.map(u => {
+    const tenant = u.tenant || '—';
+    const unit   = u.name   || '—';
+    const p      = pi(u.property);
+    const ac     = avColor(tenant + unit);
+    const dot    = STATUS_DOT[u.status] || '#7a83a0';
+    return `
+      <div class="tc" onclick="openModal('${u._id}')">
+        <div class="tc-top">
+          <div class="tc-avatar" style="background:${ac[0]};color:${ac[1]}">
+            ${ini(tenant)}
+            <div class="tc-avatar-status" style="background:${dot}"></div>
+          </div>
+          <div class="tc-info">
+            <div class="tc-name">${tenant}</div>
+            <div class="tc-unit">Unit ${unit}</div>
+            <div class="tc-prop">
+              <div class="tc-prop-dot" style="background:${p.hex}"></div>
+              <span style="color:var(--t2);font-size:11px">${u.property||'—'}</span>
+            </div>
+          </div>
+          <span class="pill ${PILL_MAP[u.status]||'p-copper'}">${u.status||'—'}</span>
+        </div>
+        <div class="tc-body">
+          <div class="tc-row"><span class="tc-row-lbl">Floor</span><span class="tc-row-val">${u.floor?'Floor '+u.floor:'—'}</span></div>
+          <div class="tc-row"><span class="tc-row-lbl">Monthly Rent</span><span class="tc-row-val" style="color:var(--copper-l);font-family:'Cormorant Garamond',serif;font-size:15px">${u.price?fmtRev(Number(u.price)):'—'}</span></div>
+          <div class="tc-row"><span class="tc-row-lbl">Move-in</span><span class="tc-row-val">${moveIn(u)}</span></div>
+        </div>
+        <div class="tc-foot" onclick="event.stopPropagation()">
+          <button class="act-btn edit-btn" onclick="openEditDirect('${u._id}')">✏️ Edit</button>
+          <button class="act-btn del-btn" onclick="deleteTenant('${u._id}','${tenant}')">🗑 Remove</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ════ TABLE RENDER ════ */
+function renderTable() {
+  const body = document.getElementById('tenantTableBody');
+  if (FILTERED.length === 0) {
+    body.innerHTML = `<tr><td colspan="8"><div class="empty"><div class="eico">👤</div>No tenants match your filters.</div></td></tr>`;
+    return;
+  }
+  body.innerHTML = FILTERED.map(u => {
+    const tenant = u.tenant || '—';
+    const unit   = u.name   || '—';
+    const p      = pi(u.property);
+    const ac     = avColor(tenant + unit);
+    return `
+      <tr onclick="openModal('${u._id}')">
+        <td>
+          <div class="t-cell">
+            <div class="t-av" style="background:${ac[0]};color:${ac[1]}">${ini(tenant)}</div>
+            <div><div class="t-name">${tenant}</div><div class="t-unit">Unit ${unit}</div></div>
+          </div>
+        </td>
+        <td style="font-weight:600">${unit}</td>
+        <td>
+          <div class="prop-badge">
+            <div class="prop-dot" style="background:${p.hex}"></div>
+            ${u.property||'—'}
+          </div>
+        </td>
+        <td style="color:var(--t2)">${u.floor?'Fl. '+u.floor:'—'}</td>
+        <td style="font-weight:600;color:var(--copper-l)">${u.price?fmtRev(Number(u.price)):'—'}</td>
+        <td><span class="pill ${PILL_MAP[u.status]||'p-copper'}">${u.status||'—'}</span></td>
+        <td style="color:var(--t2);font-size:11.5px">${moveIn(u)}</td>
+        <td onclick="event.stopPropagation()">
+          <div class="btns">
+            <button class="act-btn edit-btn" onclick="openEditDirect('${u._id}')">✏️ Edit</button>
+            <button class="act-btn del-btn" onclick="deleteTenant('${u._id}','${tenant}')">🗑</button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+/* ════ MODAL ════ */
+function openModal(id) {
+  MODAL_UNIT = ALL_UNITS.find(u => u._id === id);
+  if (!MODAL_UNIT) return;
+  const u = MODAL_UNIT;
+  const p = pi(u.property);
+  const ac = avColor((u.tenant||'')+(u.name||''));
+
+  // Populate view
+  const mAv = document.getElementById('mAvatar');
+  mAv.textContent = ini(u.tenant||'—');
+  mAv.style.background = ac[0];
+  mAv.style.color = ac[1];
+
+  document.getElementById('mName').textContent    = u.tenant || '—';
+  document.getElementById('mUnit').textContent    = `Unit ${u.name||'—'} · ${u.property||'—'}`;
+  document.getElementById('md-name').textContent  = u.tenant || '—';
+  document.getElementById('md-unit').textContent  = u.name   || '—';
+  document.getElementById('md-prop').innerHTML    = `<span style="display:inline-flex;align-items:center;gap:5px"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${p.hex}"></span>${u.property||'—'}</span>`;
+  document.getElementById('md-floor').textContent = u.floor  ? 'Floor ' + u.floor : '—';
+  document.getElementById('md-rent').textContent  = u.price  ? fmtRev(Number(u.price)) : '—';
+  document.getElementById('md-status').innerHTML  = `<span class="pill ${PILL_MAP[u.status]||'p-copper'}">${u.status||'—'}</span>`;
+  document.getElementById('md-id').textContent    = u._id;
+
+  document.getElementById('modalView').style.display = 'block';
+  document.getElementById('modalEdit').style.display = 'none';
+  document.getElementById('tenantOverlay').classList.add('open');
+}
+
+function openEditDirect(id) {
+  openModal(id);
+  setTimeout(switchToEdit, 50);
+}
+
+function switchToEdit() {
+  const u = MODAL_UNIT;
+  if (!u) return;
+  const ac = avColor((u.tenant||'')+(u.name||''));
+
+  const mAv = document.getElementById('mAvatarEdit');
+  mAv.textContent = ini(u.tenant||'—');
+  mAv.style.background = ac[0];
+  mAv.style.color = ac[1];
+
+  document.getElementById('mUnitEdit').textContent = `Unit ${u.name||'—'} · ${u.property||'—'}`;
+  document.getElementById('e-id').value     = u._id;
+  document.getElementById('e-prop').value   = u.property || PROPS[0].name;
+  document.getElementById('e-unit').value   = u.name     || '';
+  document.getElementById('e-floor').value  = u.floor    || '';
+  document.getElementById('e-tenant').value = u.tenant   || '';
+  document.getElementById('e-rent').value   = u.price    || '';
+  document.getElementById('e-status').value = u.status   || 'Occupied';
+  document.getElementById('editMsg').className = 'mfld';
+  document.getElementById('editMsg').textContent = '';
+
+  document.getElementById('modalView').style.display = 'none';
+  document.getElementById('modalEdit').style.display = 'block';
+}
+
+function switchToView() {
+  document.getElementById('modalView').style.display = 'block';
+  document.getElementById('modalEdit').style.display = 'none';
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('tenantOverlay'))
+    document.getElementById('tenantOverlay').classList.remove('open');
+}
+
+/* ════ SAVE EDIT ════ */
+async function saveEdit() {
+  const id       = document.getElementById('e-id').value;
+  const property = document.getElementById('e-prop').value;
+  const name     = document.getElementById('e-unit').value.trim();
+  const floor    = document.getElementById('e-floor').value.trim();
+  const tenant   = document.getElementById('e-tenant').value.trim();
+  const price    = document.getElementById('e-rent').value.trim();
+  const status   = document.getElementById('e-status').value;
+  const msg      = document.getElementById('editMsg');
+
+  if (!name || !price) {
+    msg.textContent = '❌ Unit number and rent are required.';
+    msg.className = 'm-msg err'; return;
+  }
+
+  try {
+    const res = await apiFetch(`${API}/products/${id}`, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ name, price:Number(price), property, tenant:tenant||'—', floor:floor||'—', status })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      msg.textContent = '✅ Tenant updated successfully!';
+      msg.className = 'm-msg ok';
+      await loadTenants();
+      // Refresh modal unit reference
+      MODAL_UNIT = ALL_UNITS.find(u => u._id === id);
+      setTimeout(() => {
+        document.getElementById('tenantOverlay').classList.remove('open');
+        msg.textContent = ''; msg.className = 'm-msg';
+      }, 1400);
+    } else {
+      msg.textContent = `❌ ${data.message}`;
+      msg.className = 'm-msg err';
+    }
+  } catch {
+    msg.textContent = '❌ Cannot reach server.';
+    msg.className = 'm-msg err';
+  }
+}
+
+/* ════ DELETE ════ */
+async function deleteTenant(id, name) {
+  if (!confirm(`Remove unit for "${name}"?\nThis cannot be undone.`)) return;
+  try {
+    await apiFetch(`${API}/products/${id}`, { method:'DELETE' });
+    document.getElementById('tenantOverlay').classList.remove('open');
+    await loadTenants();
+  } catch { alert('❌ Cannot connect to server.'); }
+}
+
+/* ════ SESSION ════ */
+function loadSession() {
+  const raw = sessionStorage.getItem('mp_session');
+  if (!raw) return;
+  const u = JSON.parse(raw);
+  const fullName = `${u.firstName||''} ${u.lastName||''}`.trim() || 'User';
+  const initials = ((u.firstName||'?')[0]+(u.lastName||'?')[0]).toUpperCase();
+  const ROLES = {'agency-director':'🏢 Agency Director','property-manager':'🗝 Property Manager','finance-officer':'💰 Finance Officer','maintenance-staff':'🔧 Maintenance Staff','leasing-agent':'📋 Leasing Agent','tenant':'🏠 Tenant','auditor':'📊 Auditor / Viewer'};
+  const av = document.getElementById('sbAv');
+  if (u.avatar) { av.innerHTML = `<img src="${u.avatar}" alt="${fullName}"/>`; }
+  else { av.textContent = initials; }
+  document.getElementById('sbName').textContent = fullName;
+  document.getElementById('sbRole').textContent = ROLES[u.role] || u.role || '—';
+}
+
+/* ════ CLOCK ════ */
+(function tick() {
+  document.getElementById('clock').textContent =
+    new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  setTimeout(tick,1000);
+})();
+
+/* ════ INIT ════ */
+document.getElementById('yr').textContent = new Date().getFullYear();
+loadSession();
+loadTenants();
+setInterval(loadTenants, 10000);
+</script>
+</body>
+</html>

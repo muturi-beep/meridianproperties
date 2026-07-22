@@ -1,0 +1,57 @@
+/**
+ * One-time migration: backfill Payment.tenantId for records created before
+ * this field existed, by matching the stored `tenant` name text against
+ * existing User records.
+ *
+ * Run once with:  node migrate-tenant-ids.js
+ * Safe to re-run — it only touches records where tenantId is still null.
+ */
+require('dotenv').config();
+const mongoose = require('mongoose');
+
+const userSchema = new mongoose.Schema({
+  firstName: String, lastName: String, email: String,
+  phone: String, role: String, password: String, avatar: String,
+  createdAt: Date,
+});
+const paymentSchema = new mongoose.Schema({
+  tenant: String, tenantId: mongoose.Schema.Types.ObjectId,
+  property: String, unit: String, amount: Number, type: String,
+  status: String, method: String, date: Date, reference: String, createdAt: Date,
+});
+
+const User    = mongoose.model('User', userSchema);
+const Payment = mongoose.model('Payment', paymentSchema);
+
+async function run() {
+  await mongoose.connect(process.env.MONGO_URI);
+  console.log('✅ Connected to MongoDB');
+
+  const users = await User.find({ role: 'tenant' });
+  const byName = new Map(users.map(u => [`${u.firstName} ${u.lastName}`.trim().toLowerCase(), u._id]));
+
+  const unmatched = await Payment.find({ tenantId: null });
+  console.log(`Found ${unmatched.length} payment(s) without a tenantId.`);
+
+  let updated = 0, skipped = 0;
+  for (const p of unmatched) {
+    const key = (p.tenant || '').trim().toLowerCase();
+    const userId = byName.get(key);
+    if (userId) {
+      p.tenantId = userId;
+      await p.save();
+      updated++;
+    } else {
+      skipped++;
+      console.log(`  ⚠️  No matching tenant user found for payment "${p.tenant}" (id ${p._id}) — left as-is.`);
+    }
+  }
+
+  console.log(`✅ Done. Updated ${updated}, skipped ${skipped} (no matching user — check spelling/name mismatches).`);
+  await mongoose.disconnect();
+}
+
+run().catch(err => {
+  console.error('❌ Migration failed:', err.message);
+  process.exit(1);
+});

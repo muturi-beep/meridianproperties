@@ -1,0 +1,1473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Meridian Properties — Live Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    /* ══════════════ TOKENS ══════════════ */
+    :root {
+      --ink:        #0c0f18; --ink-2: #131722; --ink-3: #1a2030; --ink-4: #222840;
+      --copper:     #b8834a; --copper-l: #d4a46a; --copper-dim: rgba(184,131,74,.14);
+      --white:      #ffffff; --t1: #edf0f8; --t2: #7a83a0; --t3: #3a4260;
+      --border:     rgba(255,255,255,.06); --border-2: rgba(255,255,255,.10);
+      --green:      #3ecf8e; --green-bg: rgba(62,207,142,.12);
+      --amber:      #f5a623; --amber-bg: rgba(245,166,35,.12);
+      --red:        #f06060; --red-bg:   rgba(240,96,96,.12);
+      --blue:       #4a9ef5; --blue-bg:  rgba(74,158,245,.12);
+      --harbor:  #2eb8c5; --metro: #8b8ff5; --sunset:    #f07040;
+      --downtown:#4a9ef5; --river: #48c78e; --greenwood: #78c44a;
+      --r: 14px; --rs: 8px; --shadow: 0 16px 48px rgba(0,0,0,.45);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:'Outfit',sans-serif;background:var(--ink);color:var(--t1);min-height:100vh;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.015) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.015) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+    body::after{content:'';position:fixed;top:-200px;left:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(184,131,74,.07) 0%,transparent 70%);pointer-events:none;z-index:0}
+
+    /* ══════════════ LAYOUT ══════════════ */
+    .shell{display:grid;grid-template-columns:248px 1fr;min-height:100vh;position:relative;z-index:1}
+
+    /* ══════════════ SIDEBAR ══════════════ */
+    .sidebar{background:var(--ink-2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+    .sb-brand{padding:24px 20px 18px;border-bottom:1px solid var(--border)}
+    .brand-row{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+    .emblem{width:36px;height:36px;background:linear-gradient(135deg,var(--copper),var(--copper-l));border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .emblem svg{width:19px;height:19px}
+    .brand-name{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:700;color:var(--white);line-height:1.15}
+    .brand-sub{font-size:9px;color:var(--t3);letter-spacing:.14em;text-transform:uppercase;margin-top:5px}
+
+    .sb-kpis{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:12px 16px;border-bottom:1px solid var(--border)}
+    .skpi{background:var(--ink-3);border-radius:var(--rs);padding:9px 11px;transition:all .3s}
+    .skpi.flash{animation:kflash .7s ease}
+    @keyframes kflash{0%{background:rgba(184,131,74,.3)}100%{background:var(--ink-3)}}
+    .skpi-v{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--copper-l)}
+    .skpi-l{font-size:9.5px;color:var(--t2);margin-top:1px}
+
+    .sb-nav{padding:12px;flex:1}
+    .ng{font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--t3);padding:10px 8px 4px}
+    .ni{display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:var(--rs);font-size:13px;color:var(--t2);cursor:pointer;margin-bottom:1px;transition:all .15s;text-decoration:none;position:relative}
+    .ni:hover{background:rgba(255,255,255,.04);color:var(--t1)}
+    .ni.active{background:var(--copper-dim);color:var(--copper-l);font-weight:500}
+    .ni.active::before{content:'';position:absolute;left:0;top:25%;bottom:25%;width:2px;background:var(--copper);border-radius:2px}
+    .ni-ico{width:14px;height:14px;flex-shrink:0;opacity:.65}
+    .ni.active .ni-ico{opacity:1}
+    .nbadge{margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:600;border-radius:20px;padding:1px 6px}
+
+    .sb-props{padding:0 12px 14px;border-top:1px solid var(--border)}
+    .spl{font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--t3);padding:10px 8px 5px}
+    .spr{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:var(--rs);cursor:pointer;transition:background .15s;margin-bottom:1px}
+    .spr:hover{background:rgba(255,255,255,.04)}
+    .spr.active{background:rgba(255,255,255,.06)}
+    .sp-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+    .sp-name{font-size:12px;color:var(--t1);flex:1}
+    .sp-cnt{font-size:10.5px;color:var(--t2);background:var(--ink-3);border-radius:20px;padding:1px 7px;min-width:22px;text-align:center;transition:all .3s}
+    .sp-cnt.flash{animation:kflash .7s ease}
+
+    .sb-foot{padding:12px 14px;border-top:1px solid var(--border);cursor:pointer;transition:background .15s;position:relative}
+    .sb-foot:hover{background:rgba(255,255,255,.03)}
+    .sb-foot-inner{display:flex;align-items:center;gap:10px}
+    .sav{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--copper),var(--copper-l));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--ink);flex-shrink:0;overflow:hidden;transition:all .2s}
+    .sav img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+    .sb-foot:hover .sav{box-shadow:0 0 0 2px var(--copper)}
+    .sun{font-size:12.5px;font-weight:500;color:var(--t1)}
+    .sur{font-size:10px;color:var(--t2);margin-top:1px}
+    .sb-foot-chevron{margin-left:auto;font-size:10px;color:var(--t3);transition:transform .2s}
+    .sb-foot:hover .sb-foot-chevron{color:var(--copper-l);transform:translateY(-2px)}
+
+    /* ── User Profile Drawer ── */
+    .user-drawer{position:absolute;bottom:calc(100% + 8px);left:10px;right:10px;background:var(--ink);border:1px solid var(--border-2);border-radius:var(--r);box-shadow:0 -16px 48px rgba(0,0,0,.5);z-index:200;overflow:hidden;display:none;animation:drawerUp .25s ease both}
+    .user-drawer.open{display:block}
+    @keyframes drawerUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+    .ud-header{padding:16px 16px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+    .ud-avatar-wrap{position:relative;flex-shrink:0}
+    .ud-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--copper),var(--copper-l));display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--ink);overflow:hidden;border:2px solid var(--copper-dim)}
+    .ud-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+    .ud-info{flex:1;min-width:0}
+    .ud-name{font-size:13.5px;font-weight:600;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ud-email{font-size:10.5px;color:var(--t2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ud-role-badge{display:inline-flex;align-items:center;gap:4px;margin-top:5px;font-size:9.5px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--copper-dim);color:var(--copper-l);border:1px solid rgba(184,131,74,.2)}
+
+    .ud-body{padding:8px}
+    .ud-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--rs);font-size:12.5px;color:var(--t2);cursor:pointer;transition:all .15s;text-decoration:none;border:none;background:none;width:100%;font-family:'Outfit',sans-serif;text-align:left}
+    .ud-item:hover{background:rgba(255,255,255,.05);color:var(--t1)}
+    .ud-item-ico{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;background:var(--ink-3)}
+    .ud-item.danger{color:var(--red)}
+    .ud-item.danger:hover{background:var(--red-bg)}
+    .ud-item.danger .ud-item-ico{background:var(--red-bg)}
+    .ud-divider{height:1px;background:var(--border);margin:4px 0}
+
+    /* ── Edit Profile Modal ── */
+    .prof-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:500;display:none;align-items:center;justify-content:center}
+    .prof-overlay.open{display:flex}
+    .prof-modal{background:var(--ink-2);border:1px solid var(--border-2);border-radius:var(--r);padding:28px;width:440px;max-width:95vw;box-shadow:0 24px 64px rgba(0,0,0,.5);animation:modalIn .25s ease both}
+    @keyframes modalIn{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+    .prof-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+    .prof-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--white)}
+    .prof-close{background:transparent;border:1px solid var(--border);color:var(--t2);width:30px;height:30px;border-radius:7px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:'Outfit',sans-serif}
+    .prof-close:hover{background:var(--red-bg);color:var(--red);border-color:var(--red)}
+
+    /* Avatar upload area */
+    .avatar-upload{display:flex;align-items:center;gap:14px;padding:14px;background:var(--ink-3);border-radius:var(--r);margin-bottom:16px;border:1px solid var(--border)}
+    .au-pic{width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--copper),var(--copper-l));display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--ink);overflow:hidden;flex-shrink:0;border:2px solid var(--copper-dim)}
+    .au-pic img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+    .au-btn{font-size:12px;color:var(--copper-l);cursor:pointer;background:transparent;border:1px solid rgba(184,131,74,.3);border-radius:6px;padding:6px 12px;font-family:'Outfit',sans-serif;transition:all .15s}
+    .au-btn:hover{background:var(--copper-dim)}
+    .au-hint{font-size:10.5px;color:var(--t3);margin-top:3px}
+    #avatarFileInput{display:none}
+
+    .prow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+    .prow.full{grid-template-columns:1fr}
+    .pfld{display:flex;flex-direction:column;gap:4px}
+    .pfld label{font-size:9.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--t2)}
+    .pfld input,.pfld select{background:var(--ink-3);border:1px solid var(--border);border-radius:var(--rs);padding:9px 11px;font-size:12.5px;color:var(--t1);font-family:'Outfit',sans-serif;outline:none;transition:border-color .2s;appearance:none}
+    .pfld input:focus,.pfld select:focus{border-color:var(--copper)}
+    .pfld input::placeholder{color:var(--t3)}
+    .pfld select option{background:var(--ink-3)}
+    .prof-btns{display:flex;gap:9px;margin-top:14px}
+    .prof-save{flex:1;padding:11px;background:linear-gradient(135deg,var(--copper),var(--copper-l));color:var(--ink);border:none;border-radius:var(--rs);font-size:13px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;transition:opacity .2s}
+    .prof-save:hover{opacity:.9}
+    .prof-cancel{padding:11px 16px;background:transparent;border:1px solid var(--border-2);color:var(--t2);border-radius:var(--rs);font-size:13px;font-family:'Outfit',sans-serif;cursor:pointer;transition:all .15s}
+    .prof-cancel:hover{border-color:var(--red);color:var(--red)}
+    .prof-msg{padding:9px 12px;border-radius:var(--rs);font-size:12px;margin-top:10px;display:none}
+    .prof-msg.ok{background:var(--green-bg);color:var(--green);border:1px solid rgba(62,207,142,.2);display:block}
+    .prof-msg.err{background:var(--red-bg);color:var(--red);border:1px solid rgba(240,96,96,.2);display:block}
+
+
+    /* ══════════════ TOPBAR ══════════════ */
+    .topbar{background:var(--ink-2);border-bottom:1px solid var(--border);padding:13px 26px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:30}
+    .tb-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--white);transition:all .3s}
+    .tb-sub{font-size:11.5px;color:var(--t2);margin-top:1px;transition:all .3s}
+    .tb-r{display:flex;align-items:center;gap:9px}
+    .lc{font-size:11px;color:var(--t2);display:flex;align-items:center;gap:5px}
+    .ld{width:6px;height:6px;border-radius:50%;background:var(--green);animation:glow 2s infinite}
+    @keyframes glow{0%,100%{box-shadow:0 0 0 3px var(--green-bg)}50%{box-shadow:0 0 0 6px rgba(62,207,142,.04)}}
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--rs);border:1px solid var(--border-2);font-size:12px;font-weight:500;color:var(--t2);background:transparent;cursor:pointer;transition:all .15s;font-family:'Outfit',sans-serif}
+    .btn:hover{border-color:var(--copper-dim);color:var(--t1);background:var(--copper-dim)}
+    .btn.cta{background:var(--copper);border-color:var(--copper);color:var(--ink);font-weight:600}
+    .btn.cta:hover{background:var(--copper-l);border-color:var(--copper-l)}
+
+    /* ══════════════ CONN BAR ══════════════ */
+    .conn{display:flex;align-items:center;gap:9px;padding:8px 14px;background:var(--ink-3);border-bottom:1px solid var(--border);font-size:11.5px;color:var(--t2)}
+    .cdot{width:7px;height:7px;border-radius:50%;background:var(--t3);flex-shrink:0;transition:all .3s}
+    .cdot.live{background:var(--green);box-shadow:0 0 0 3px var(--green-bg);animation:glow 2s infinite}
+    .cdot.dead{background:var(--red);box-shadow:0 0 0 3px var(--red-bg)}
+
+    /* ══════════════ MAIN ══════════════ */
+    .main{padding:22px 26px 48px}
+    .slbl{font-size:9.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--t3);margin:24px 0 13px;transition:all .3s}
+    .slbl:first-child{margin-top:0}
+
+    /* ══════════════ METRICS ══════════════ */
+    .met-row{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:8px}
+    .mc{background:var(--ink-2);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;position:relative;overflow:hidden;animation:up .5s ease both}
+    .mc:nth-child(1){animation-delay:.05s}.mc:nth-child(2){animation-delay:.10s}.mc:nth-child(3){animation-delay:.15s}.mc:nth-child(4){animation-delay:.20s}
+    .mc::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:var(--r) var(--r) 0 0}
+    .mc.g::after{background:var(--green)}.mc.c::after{background:var(--copper)}.mc.a::after{background:var(--amber)}.mc.r::after{background:var(--red)}
+    .mc.bump{animation:bump .6s ease}
+    @keyframes bump{0%{box-shadow:0 0 0 2px rgba(184,131,74,.6)}100%{box-shadow:none}}
+    .mc-ico{width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;margin-bottom:10px}
+    .mc.g .mc-ico{background:var(--green-bg)}.mc.c .mc-ico{background:var(--copper-dim)}.mc.a .mc-ico{background:var(--amber-bg)}.mc.r .mc-ico{background:var(--red-bg)}
+    .mc-lbl{font-size:10.5px;color:var(--t2);font-weight:500;margin-bottom:4px}
+    .mc-val{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:var(--white);letter-spacing:-.03em;line-height:1;transition:all .3s}
+    .mc-sub{font-size:11px;margin-top:6px}
+    .up{color:var(--green)}.dn{color:var(--red)}
+
+    /* ══════════════ PROPERTY CARDS ══════════════ */
+    .pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-bottom:8px}
+    .pc{background:var(--ink-2);border:1px solid var(--border);border-radius:var(--r);padding:17px 19px;cursor:pointer;position:relative;overflow:hidden;transition:all .2s;animation:up .5s ease both}
+    .pc:nth-child(1){animation-delay:.07s}.pc:nth-child(2){animation-delay:.13s}.pc:nth-child(3){animation-delay:.19s}
+    .pc:nth-child(4){animation-delay:.25s}.pc:nth-child(5){animation-delay:.31s}.pc:nth-child(6){animation-delay:.37s}
+    .pc:hover{transform:translateY(-2px);border-color:var(--border-2);box-shadow:var(--shadow)}
+    .pc.active{border-color:var(--border-2);box-shadow:var(--shadow)}
+    .pc-bar{position:absolute;top:0;left:0;bottom:0;width:3px;border-radius:var(--r) 0 0 var(--r)}
+    .pc-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+    .pc-name{font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:700;color:var(--white);line-height:1.2}
+    .pc-loc{font-size:10.5px;color:var(--t2);margin-top:2px}
+    .donut{position:relative;width:40px;height:40px;flex-shrink:0}
+    .donut svg{width:40px;height:40px;transform:rotate(-90deg)}
+    .donut-lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:700;color:var(--t1)}
+    .pc-info{font-size:10.5px;color:var(--t2);display:flex;align-items:center;gap:5px;margin-bottom:2px}
+    .pc-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+    .pcs{text-align:center}
+    .pcs-v{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:700;color:var(--t1);transition:all .3s}
+    .pcs-l{font-size:9px;color:var(--t3);margin-top:1px}
+    .pc.bump{animation:bump .6s ease}
+
+    /* ══════════════ BOTTOM GRID ══════════════ */
+    .bgrid{display:grid;grid-template-columns:1fr 340px;gap:15px}
+
+    /* ══════════════ UNITS PANEL ══════════════ */
+    .upanel{background:var(--ink-2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;animation:up .5s ease .2s both}
+    .uhead{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .utitle{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:700;color:var(--white);display:flex;align-items:center;gap:8px}
+    .uaccent{width:8px;height:8px;border-radius:50%;transition:background .3s}
+    .ucnt{font-size:10.5px;color:var(--t2);background:var(--ink-3);border-radius:20px;padding:2px 8px;margin-left:3px;transition:all .3s}
+    .ucnt.flash{animation:kflash .7s ease}
+    .tabs{display:flex;gap:3px}
+    .tab{padding:5px 11px;border-radius:6px;font-size:11px;font-weight:500;color:var(--t2);background:transparent;border:1px solid transparent;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s}
+    .tab:hover{background:rgba(255,255,255,.04);color:var(--t1)}
+    .tab.active{background:var(--ink-3);color:var(--t1);border-color:var(--border)}
+
+    /* Table */
+    .utable{width:100%;border-collapse:collapse}
+    .utable th{font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--t3);border-bottom:1px solid var(--border);padding:0 12px 9px;text-align:left;white-space:nowrap}
+    .utable td{font-size:12.5px;color:var(--t1);padding:11px 12px;border-bottom:1px solid var(--border)}
+    .utable tbody tr:last-child td{border-bottom:none}
+    .utable tbody tr{transition:background .12s}
+    .utable tbody tr:hover td{background:rgba(255,255,255,.025)}
+    .utable tbody tr.new-row{animation:rowin .6s ease both}
+    @keyframes rowin{from{opacity:0;background:rgba(184,131,74,.18)}to{opacity:1;background:transparent}}
+
+    .tcell{display:flex;align-items:center;gap:8px}
+    .tav{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:700;flex-shrink:0}
+    .tname{font-weight:500;font-size:12.5px}
+    .tunit{font-size:10.5px;color:var(--t2);margin-top:1px}
+    .pbadge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px}
+    .pbdot{width:6px;height:6px;border-radius:50%}
+
+    /* Pills */
+    .pill{display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 9px;border-radius:20px}
+    .p-green{background:var(--green-bg);color:var(--green)}
+    .p-amber{background:var(--amber-bg);color:var(--amber)}
+    .p-red{background:var(--red-bg);color:var(--red)}
+    .p-blue{background:var(--blue-bg);color:var(--blue)}
+    .p-copper{background:var(--copper-dim);color:var(--copper-l)}
+
+    /* Action buttons */
+    .act-btn{border:1px solid var(--border);border-radius:6px;padding:4px 9px;font-size:10.5px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;background:transparent;white-space:nowrap}
+    .edit-btn{color:var(--blue);border-color:rgba(74,158,245,.25)}
+    .edit-btn:hover{background:var(--blue-bg);border-color:var(--blue)}
+    .del-btn{color:var(--red);border-color:rgba(240,96,96,.25)}
+    .del-btn:hover{background:var(--red-bg);border-color:var(--red)}
+    .btns{display:flex;gap:5px}
+
+    .empty{text-align:center;padding:32px 16px;color:var(--t3);font-size:12.5px}
+    .eico{font-size:32px;margin-bottom:9px}
+    .skel{height:44px;background:linear-gradient(90deg,var(--ink-3) 25%,var(--ink-4) 50%,var(--ink-3) 75%);background-size:200% 100%;animation:shim 1.4s infinite;border-radius:var(--rs);margin-bottom:7px}
+    @keyframes shim{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+    /* ══════════════ FORM PANEL ══════════════ */
+    .fpanel{background:var(--ink-2);border:1px solid var(--border);border-radius:var(--r);padding:20px;animation:up .5s ease .3s both;position:sticky;top:76px;align-self:start}
+    .ftitle{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;color:var(--white);margin-bottom:14px;display:flex;align-items:center;gap:7px}
+    .fta{color:var(--copper)}
+    .fpi{display:flex;align-items:center;gap:6px;padding:7px 10px;background:var(--ink-3);border-radius:var(--rs);font-size:11.5px;color:var(--t1);margin-bottom:12px;transition:all .3s}
+    .fpi-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;transition:background .3s}
+    .frow{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:9px}
+    .frow.full{grid-template-columns:1fr}
+    .fld{display:flex;flex-direction:column;gap:4px}
+    .fld label{font-size:9.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--t2)}
+    .fld input,.fld select{background:var(--ink-3);border:1px solid var(--border);border-radius:var(--rs);padding:9px 11px;font-size:12.5px;color:var(--t1);font-family:'Outfit',sans-serif;outline:none;transition:border-color .2s;appearance:none}
+    .fld input:focus,.fld select:focus{border-color:var(--copper)}
+    .fld input::placeholder{color:var(--t3)}
+    .fld select option{background:var(--ink-3)}
+    .sbtn{width:100%;padding:11px;background:linear-gradient(135deg,var(--copper),var(--copper-l));color:var(--ink);border:none;border-radius:var(--rs);font-size:13px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;letter-spacing:.03em;transition:opacity .2s,transform .1s;margin-top:4px}
+    .sbtn:hover{opacity:.9}.sbtn:active{transform:scale(.98)}.sbtn:disabled{opacity:.5;cursor:not-allowed}
+    .fmsg{padding:9px 12px;border-radius:var(--rs);font-size:12px;margin-top:9px;display:none}
+    .fmsg.ok{background:var(--green-bg);color:var(--green);border:1px solid rgba(62,207,142,.2);display:block}
+    .fmsg.err{background:var(--red-bg);color:var(--red);border:1px solid rgba(240,96,96,.2);display:block}
+
+    /* ══════════════ EDIT MODAL ══════════════ */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center}
+    .overlay.open{display:flex}
+    .modal{background:var(--ink-2);border:1px solid var(--border-2);border-radius:var(--r);padding:28px;width:480px;max-width:95vw;box-shadow:var(--shadow);animation:modal-in .25s ease both}
+    @keyframes modal-in{from{opacity:0;transform:translateY(20px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+    .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+    .modal-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--white)}
+    .modal-close{background:transparent;border:1px solid var(--border);color:var(--t2);width:30px;height:30px;border-radius:7px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:'Outfit',sans-serif}
+    .modal-close:hover{background:var(--red-bg);color:var(--red);border-color:var(--red)}
+    .mrow{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:11px}
+    .mrow.full{grid-template-columns:1fr}
+    .mfld{display:flex;flex-direction:column;gap:5px}
+    .mfld label{font-size:9.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--t2)}
+    .mfld input,.mfld select{background:var(--ink-3);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;font-size:13px;color:var(--t1);font-family:'Outfit',sans-serif;outline:none;transition:border-color .2s;appearance:none}
+    .mfld input:focus,.mfld select:focus{border-color:var(--copper)}
+    .mfld select option{background:var(--ink-3)}
+    .modal-btns{display:flex;gap:9px;margin-top:16px}
+    .modal-save{flex:1;padding:11px;background:linear-gradient(135deg,var(--copper),var(--copper-l));color:var(--ink);border:none;border-radius:var(--rs);font-size:13px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;transition:opacity .2s}
+    .modal-save:hover{opacity:.9}
+    .modal-cancel{padding:11px 18px;background:transparent;border:1px solid var(--border-2);color:var(--t2);border-radius:var(--rs);font-size:13px;font-weight:500;font-family:'Outfit',sans-serif;cursor:pointer;transition:all .15s}
+    .modal-cancel:hover{border-color:var(--red);color:var(--red)}
+
+    /* ══════════════ DASHBOARD FOOTER ══════════════ */
+    .dash-footer{
+      padding:14px 26px;
+      background:var(--ink-2);
+      border-top:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;
+      font-size:11.5px;color:var(--t3);
+      flex-wrap:wrap;gap:8px;
+    }
+    .dash-footer a{color:var(--t3);text-decoration:none;transition:color .15s;}
+    .dash-footer a:hover{color:var(--copper-l);}
+    .dash-footer strong{color:var(--copper);font-weight:600;}
+
+    @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+    @media(max-width:1200px){.pgrid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:1050px){.met-row{grid-template-columns:repeat(2,1fr)}.bgrid{grid-template-columns:1fr}.fpanel{position:static}}
+    @media(max-width:820px){.shell{grid-template-columns:1fr}.sidebar{display:none}.pgrid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:580px){.pgrid{grid-template-columns:1fr}.frow{grid-template-columns:1fr}.met-row{grid-template-columns:1fr}.main{padding:14px}}
+  </style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ════════ SIDEBAR ════════ -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="brand-row">
+        <div class="emblem">
+          <svg viewBox="0 0 20 20" fill="none">
+            <path d="M10 2L18 6.5V13.5L10 18L2 13.5V6.5Z" stroke="#0c0f18" stroke-width="1.5"/>
+            <path d="M10 5.5L15 8.5V12.5L10 15.5L5 12.5V8.5Z" fill="#0c0f18" opacity=".35"/>
+          </svg>
+        </div>
+        <div><div class="brand-name">Meridian<br>Properties</div></div>
+      </div>
+      <div class="brand-sub">Agency Management Portal</div>
+    </div>
+
+    <div class="sb-kpis">
+      <div class="skpi" id="sk-total"><div class="skpi-v" id="sv-total">0</div><div class="skpi-l">Total Units</div></div>
+      <div class="skpi"><div class="skpi-v">6</div><div class="skpi-l">Properties</div></div>
+      <div class="skpi" id="sk-occ"><div class="skpi-v" id="sv-occ">0</div><div class="skpi-l">Occupied</div></div>
+      <div class="skpi" id="sk-vac"><div class="skpi-v" id="sv-vac">0</div><div class="skpi-l">Vacant</div></div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="ng">Agency</div>
+      <a class="ni active" href="dashboard.html" onclick="showAll(event)">
+        <svg class="ni-ico" viewBox="0 0 15 15" fill="currentColor"><rect x="1" y="1" width="5.5" height="5.5" rx="1"/><rect x="8.5" y="1" width="5.5" height="5.5" rx="1"/><rect x="1" y="8.5" width="5.5" height="5.5" rx="1"/><rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1"/></svg>
+        Overview
+      </a>
+      <a class="ni" href="analytics.html">
+        <svg class="ni-ico" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><polyline points="1.5,12 4.5,7.5 7.5,9.5 10.5,4 13.5,6"/></svg>
+        Analytics
+      </a>
+      <div class="ng">Operations</div>
+      <a class="ni" href="tenants.html">
+        <svg class="ni-ico" viewBox="0 0 15 15" fill="currentColor"><circle cx="5" cy="4.5" r="2.3"/><path d="M1 13c0-2.5 1.8-4 4-4s4 1.5 4 4"/><circle cx="11" cy="5" r="1.8"/><path d="M13.5 13c0-2-1.2-3.2-2.8-3.5"/></svg>
+        Tenants
+      </a>
+      <a class="ni" href="maintenance.html">
+        <svg class="ni-ico" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="7.5" cy="7.5" r="2"/><path d="M7.5 1v2M7.5 12v2M1 7.5h2M12 7.5h2"/></svg>
+        Maintenance<span class="nbadge" id="maint-badge">0</span>
+      </a>
+      <div class="ng">Finance</div>
+      <a class="ni" href="payments.html">
+        <svg class="ni-ico" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="7.5" cy="7.5" r="6.5"/><path d="M7.5 4v7M5.5 6c0-1 .9-2 2-2s2 .9 2 2-1.5 1.5-2 2-.5.9-.5 1.5"/></svg>
+        Payments<span class="nbadge" id="pay-badge">0</span>
+      </a>
+      <a class="ni" href="documents.html">
+        <svg class="ni-ico" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M2.5 13h10V5.2L9 1.5H2.5z"/><path d="M8.5 1.5V6H13"/></svg>
+        Documents
+      </a>
+    </nav>
+
+    <div class="sb-props">
+      <div class="spl">Properties</div>
+      <div id="sbProps"></div>
+    </div>
+
+    <div class="sb-foot" id="sbFoot" onclick="toggleUserDrawer()">
+
+      <!-- Profile popup drawer (opens upward) -->
+      <div class="user-drawer" id="userDrawer" onclick="event.stopPropagation()">
+        <div class="ud-header">
+          <div class="ud-avatar-wrap">
+            <div class="ud-avatar" id="drawerAvatar">??</div>
+          </div>
+          <div class="ud-info">
+            <div class="ud-name" id="drawerName">Loading...</div>
+            <div class="ud-email" id="drawerEmail">—</div>
+            <div class="ud-role-badge" id="drawerRole">—</div>
+          </div>
+        </div>
+        <div class="ud-body">
+          <button class="ud-item" onclick="openEditProfile()">
+            <div class="ud-item-ico">✏️</div>
+            Edit Profile
+          </button>
+          <div class="ud-divider"></div>
+          <button class="ud-item danger" onclick="handleLogout()">
+            <div class="ud-item-ico">🚪</div>
+            Log Out
+          </button>
+          <button class="ud-item danger" onclick="handleDeleteAccount()">
+            <div class="ud-item-ico">🗑</div>
+            Delete Account
+          </button>
+        </div>
+      </div>
+
+      <!-- Footer visible area -->
+      <div class="sb-foot-inner">
+        <div class="sav" id="sbAvatar">??</div>
+        <div>
+          <div class="sun" id="sbName">Loading...</div>
+          <div class="sur" id="sbRole">—</div>
+        </div>
+        <div class="sb-foot-chevron">▲</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ════════ EDIT PROFILE MODAL ════════ -->
+  <div class="prof-overlay" id="profOverlay" onclick="closeProfModal(event)">
+    <div class="prof-modal" onclick="event.stopPropagation()">
+      <div class="prof-head">
+        <div class="prof-title">Edit Profile</div>
+        <button class="prof-close" onclick="closeProfModal()">✕</button>
+      </div>
+
+      <!-- Avatar upload -->
+      <div class="avatar-upload">
+        <div class="au-pic" id="profAvatarPreview">??</div>
+        <div>
+          <button class="au-btn" onclick="document.getElementById('avatarFileInput').click()">📷 Change Photo</button>
+          <div class="au-hint">JPG or PNG · Max 2MB</div>
+        </div>
+        <input type="file" id="avatarFileInput" accept="image/*" onchange="handleAvatarChange(event)"/>
+      </div>
+
+      <div class="prow">
+        <div class="pfld"><label>First Name</label><input type="text" id="p-first" placeholder="James"/></div>
+        <div class="pfld"><label>Last Name</label><input type="text" id="p-last" placeholder="Kariuki"/></div>
+      </div>
+      <div class="prow full">
+        <div class="pfld"><label>Phone Number</label><input type="tel" id="p-phone" placeholder="+254 7xx xxx xxx"/></div>
+      </div>
+      <div class="prow full">
+        <div class="pfld">
+          <label>Role</label>
+          <select id="p-role">
+            <option value="agency-director">🏢 Agency Director</option>
+            <option value="property-manager">🗝 Property Manager</option>
+            <option value="finance-officer">💰 Finance Officer</option>
+            <option value="maintenance-staff">🔧 Maintenance Staff</option>
+            <option value="leasing-agent">📋 Leasing Agent</option>
+            <option value="tenant">🏠 Tenant</option>
+            <option value="auditor">📊 Auditor / Viewer</option>
+          </select>
+        </div>
+      </div>
+      <div class="prow full">
+        <div class="pfld"><label>New Password <span style="color:var(--t3);font-weight:400">(leave blank to keep current)</span></label><input type="password" id="p-password" placeholder="Min. 8 characters"/></div>
+      </div>
+
+      <div class="prof-btns">
+        <button class="prof-cancel" onclick="closeProfModal()">Cancel</button>
+        <button class="prof-save" onclick="saveProfile()">Save Changes →</button>
+      </div>
+      <div class="prof-msg" id="profMsg"></div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;min-height:100vh">
+
+    <header class="topbar">
+      <div>
+        <div class="tb-title" id="tb-title">Agency Dashboard</div>
+        <div class="tb-sub" id="tb-sub">Meridian Properties · 6 Buildings · Nairobi, KE</div>
+      </div>
+      <div class="tb-r">
+        <div class="lc"><div class="ld"></div><span id="clock">--:--:--</span></div>
+        <button class="btn" onclick="fetchUnits()">↺ Refresh</button>
+        <button class="btn cta" onclick="focusForm()">+ Add Unit</button>
+      </div>
+    </header>
+
+    <div class="conn">
+      <div class="cdot" id="cdot"></div>
+      <span id="ctext">Connecting...</span>
+      <span style="margin-left:auto;font-size:10.5px;color:var(--t3)" id="sync-lbl"></span>
+    </div>
+
+    <div class="main">
+
+      <!-- Metrics -->
+      <div class="slbl">Agency Overview</div>
+      <div class="met-row">
+        <div class="mc g"><div class="mc-ico">💰</div><div class="mc-lbl">Monthly Revenue</div><div class="mc-val" id="m-rev">KES 0</div><div class="mc-sub up" id="m-rev-sub">All 6 properties</div></div>
+        <div class="mc c"><div class="mc-ico">🏢</div><div class="mc-lbl">Units Registered</div><div class="mc-val" id="m-units">0</div><div class="mc-sub up">Active portfolio</div></div>
+        <div class="mc a"><div class="mc-ico">⚡</div><div class="mc-lbl">Vacant / Overdue</div><div class="mc-val" id="m-issues">0</div><div class="mc-sub dn" id="m-issues-sub">Needs attention</div></div>
+        <div class="mc r"><div class="mc-ico">🔧</div><div class="mc-lbl">Open Work Orders</div><div class="mc-val">11</div><div class="mc-sub up">3 resolved today</div></div>
+      </div>
+
+      <!-- Property cards -->
+      <div class="slbl">Portfolio — Click to filter units below</div>
+      <div class="pgrid" id="pgrid"></div>
+
+      <!-- Units + Form -->
+      <div class="slbl" id="units-lbl">All Units — Agency Wide</div>
+      <div class="bgrid">
+
+        <!-- Units panel -->
+        <div class="upanel">
+          <div class="uhead">
+            <div class="utitle">
+              <div class="uaccent" id="uaccent" style="background:var(--copper)"></div>
+              <span id="utitle-txt">All Units</span>
+              <span class="ucnt" id="ucnt">0</span>
+            </div>
+            <div class="tabs">
+              <button class="tab active" id="tab-all" onclick="switchTab('all')">All</button>
+              <button class="tab" id="tab-occ" onclick="switchTab('occ')">Occupied</button>
+              <button class="tab" id="tab-vac" onclick="switchTab('vac')">Vacant</button>
+            </div>
+          </div>
+          <div id="ubody" style="padding:0 0 2px">
+            <div style="padding:10px 14px"><div class="skel"></div><div class="skel"></div><div class="skel" style="opacity:.5"></div></div>
+          </div>
+        </div>
+
+        <!-- Add unit form -->
+        <div class="fpanel" id="addForm">
+          <div class="ftitle"><span class="fta">✦</span> Register New Unit</div>
+
+          <div class="fpi">
+            <div class="fpi-dot" id="fpi-dot" style="background:var(--copper)"></div>
+            <span id="fpi-txt">Choose a property below</span>
+          </div>
+
+          <div class="frow full">
+            <div class="fld">
+              <label>Property</label>
+              <select id="f-prop" onchange="onPropChange()">
+                <option>Harbor View</option>
+                <option>Metropolitan Place</option>
+                <option>Sunset Plaza</option>
+                <option>Downtown Apartments</option>
+                <option>Riverside Residences</option>
+                <option>Greenwood Towers</option>
+              </select>
+            </div>
+          </div>
+          <div class="frow full">
+            <div class="fld"><label>Unit Number</label><input type="text" id="f-unit" placeholder="e.g. A-402"/></div>
+          </div>
+          <div class="frow full">
+            <div class="fld"><label>Floor</label><input type="text" id="f-floor" placeholder="e.g. 4"/></div>
+          </div>
+          <div class="frow full">
+            <div class="fld"><label>Tenant Name</label><input type="text" id="f-tenant" placeholder="Leave blank if vacant"/></div>
+          </div>
+          <div class="frow">
+            <div class="fld"><label>Monthly Rent (KES)</label><input type="number" id="f-rent" placeholder="85000"/></div>
+            <div class="fld">
+              <label>Status</label>
+              <select id="f-status">
+                <option>Occupied</option><option>Vacant</option>
+                <option>Maintenance</option><option>New Tenant</option><option>Overdue</option>
+              </select>
+            </div>
+          </div>
+          <button class="sbtn" id="saveBtn" onclick="addUnit()">Save Unit to Database →</button>
+          <div class="fmsg" id="fmsg"></div>
+        </div>
+      </div>
+    </div><!-- /.main -->
+
+    <!-- ════════ FOOTER ════════ -->
+    <footer class="dash-footer">
+      <span>© <span id="dash-year"></span> <strong>DevMinds</strong> · All rights reserved.</span>
+      <span>
+        <a href="#">Privacy Policy</a> &nbsp;·&nbsp;
+        <a href="#">Terms of Service</a>
+      </span>
+    </footer>
+
+  </div><!-- /.right panel -->
+</div><!-- /.shell -->
+
+<!-- ════════ EDIT MODAL ════════ -->
+<div class="overlay" id="editOverlay" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <div class="modal-title">✏️ Edit Unit</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <input type="hidden" id="m-id"/>
+    <div class="mrow full">
+      <div class="mfld">
+        <label>Property / Apartment</label>
+        <select id="m-prop">
+          <option>Harbor View</option><option>Metropolitan Place</option>
+          <option>Sunset Plaza</option><option>Downtown Apartments</option>
+          <option>Riverside Residences</option><option>Greenwood Towers</option>
+        </select>
+      </div>
+    </div>
+    <div class="mrow">
+      <div class="mfld"><label>Unit Number</label><input type="text" id="m-unit" placeholder="e.g. A-402"/></div>
+      <div class="mfld"><label>Floor</label><input type="text" id="m-floor" placeholder="e.g. 4"/></div>
+    </div>
+    <div class="mrow full">
+      <div class="mfld"><label>Tenant Name</label><input type="text" id="m-tenant" placeholder="Tenant name"/></div>
+    </div>
+    <div class="mrow">
+      <div class="mfld"><label>Monthly Rent (KES)</label><input type="number" id="m-rent" placeholder="85000"/></div>
+      <div class="mfld">
+        <label>Status</label>
+        <select id="m-status">
+          <option>Occupied</option><option>Vacant</option>
+          <option>Maintenance</option><option>New Tenant</option><option>Overdue</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+      <button class="modal-save" onclick="saveEdit()">Save Changes →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════ CONFIG ══════════════ */
+const API = 'http://localhost:3000';
+
+/* ══════════════ AUTH HELPERS ══════════════ */
+// Reads the JWT saved at login/signup
+function getToken() {
+  const raw = sessionStorage.getItem('mp_session');
+  if (!raw) return null;
+  try { return JSON.parse(raw).token || null; } catch { return null; }
+}
+
+// Wraps fetch: attaches the Bearer token automatically and bounces to
+// the sign-in page if the token is missing/expired (401 from the API)
+async function apiFetch(url, options = {}) {
+  const token = getToken();
+  const headers = { ...(options.headers || {}) };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(url, { ...options, headers });
+
+  if (res.status === 401) {
+    sessionStorage.removeItem('mp_session');
+    window.location.href = 'auth.html';
+  }
+  return res;
+}
+
+const PROPS = [
+  { name:'Harbor View',          emoji:'⚓', hex:'#2eb8c5', loc:'Mombasa Rd, Nairobi'  },
+  { name:'Metropolitan Place',   emoji:'🏙', hex:'#8b8ff5', loc:'Upper Hill, Nairobi'  },
+  { name:'Sunset Plaza',         emoji:'🌅', hex:'#f07040', loc:'Westlands, Nairobi'   },
+  { name:'Downtown Apartments',  emoji:'🌆', hex:'#4a9ef5', loc:'CBD, Nairobi'          },
+  { name:'Riverside Residences', emoji:'🌿', hex:'#48c78e', loc:'Parklands, Nairobi'   },
+  { name:'Greenwood Towers',     emoji:'🌲', hex:'#78c44a', loc:'Karen, Nairobi'        },
+];
+
+const PILL = {
+  'Occupied':   'p-green', 'Vacant':     'p-blue',
+  'Maintenance':'p-amber',  'New Tenant': 'p-copper',
+  'Overdue':    'p-red',
+};
+
+const AV = [
+  ['rgba(46,184,197,.22)','#2eb8c5'],['rgba(139,143,245,.22)','#8b8ff5'],
+  ['rgba(240,112,64,.22)','#f07040'], ['rgba(72,199,142,.22)','#48c78e'],
+  ['rgba(184,131,74,.22)','#b8834a'],['rgba(74,158,245,.22)','#4a9ef5'],
+];
+
+/* ══════════════ STATE ══════════════ */
+const S = {
+  units:    [],     // single source of truth
+  selected: null,   // selected property name or null = all
+  tab:      'all',  // 'all' | 'occ' | 'vac'
+  prevLen:  -1,
+};
+
+/* ══════════════ HELPERS ══════════════ */
+const pi      = n => PROPS.find(p=>p.name===n) || PROPS[0];
+const avColor = s => { let h=0; for(let i=0;i<s.length;i++) h=s.charCodeAt(i)+((h<<5)-h); return AV[Math.abs(h)%AV.length]; };
+const ini     = s => (!s||s==='—')?'?':s.trim().split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2);
+const fmt     = n => Number(n).toLocaleString();
+
+/* Smart revenue formatter: billions → B, millions → M, thousands → K */
+function fmtRev(n) {
+  if (n <= 0)          return 'KES 0';
+  if (n >= 1_000_000_000) return `KES ${(n/1_000_000_000).toFixed(2).replace(/\.?0+$/,'')}B`;
+  if (n >= 1_000_000)     return `KES ${(n/1_000_000).toFixed(2).replace(/\.?0+$/,'')}M`;
+  if (n >= 1_000)         return `KES ${(n/1_000).toFixed(0)}K`;
+  return `KES ${n}`;
+}
+
+function flash(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+}
+
+function bump(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
+}
+
+/* ══════════════ FETCH ══════════════ */
+async function fetchUnits() {
+  try {
+    const r    = await apiFetch(`${API}/products`);
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.message || 'Failed to load units.');
+    const isNew = data.length !== S.prevLen && S.prevLen !== -1;
+    S.prevLen = data.length;
+    S.units   = data;
+    setConn(true);
+    renderAll(isNew);
+    document.getElementById('sync-lbl').textContent = 'Synced ' + new Date().toLocaleTimeString();
+  } catch (err) {
+    setConn(false);
+  }
+}
+
+/* ══════════════ MASTER RENDER — every state change calls this ══════════════ */
+function renderAll(anim = false) {
+  renderMetrics(anim);
+  renderSbKpis(anim);
+  renderSbProps();
+  renderPropCards(anim);
+  renderTable(anim);
+}
+
+/* ══════════════ 1. METRICS ══════════════ */
+function renderMetrics(anim) {
+  const units  = S.selected ? S.units.filter(u=>u.property===S.selected) : S.units;
+  const rev    = units.reduce((s,u)=>s+(Number(u.price)||0),0);
+  const issues = units.filter(u=>u.status==='Vacant'||u.status==='Overdue').length;
+
+  updVal('m-rev',    fmtRev(rev), anim);
+  updVal('m-units',  units.length, anim);
+  updVal('m-issues', issues, anim);
+
+  document.getElementById('m-rev-sub').textContent    = S.selected ? `For ${S.selected}` : 'All 6 properties';
+  document.getElementById('m-issues-sub').textContent = issues>0 ? `${issues} unit${issues>1?'s':''} need attention` : 'All clear ✓';
+}
+
+function updVal(id, val, anim) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const sv = String(val);
+  if (el.textContent === sv) return;
+  el.textContent = sv;
+  if (anim) { const c=el.closest('.mc'); if(c) bump(c.id||id); }
+}
+
+/* ══════════════ 2. SIDEBAR KPIs ══════════════ */
+function renderSbKpis(anim) {
+  const occ = S.units.filter(u=>u.status==='Occupied'||u.status==='New Tenant').length;
+  const vac = S.units.filter(u=>u.status==='Vacant').length;
+  const te  = document.getElementById('sv-total');
+  const oe  = document.getElementById('sv-occ');
+  const ve  = document.getElementById('sv-vac');
+  if (te.textContent!==String(S.units.length)){te.textContent=S.units.length; if(anim)flash('sk-total');}
+  if (oe.textContent!==String(occ)){oe.textContent=occ; if(anim)flash('sk-occ');}
+  if (ve.textContent!==String(vac)){ve.textContent=vac; if(anim)flash('sk-vac');}
+}
+
+/* ══════════════ 3. SIDEBAR PROPERTY LIST ══════════════ */
+function renderSbProps() {
+  document.getElementById('sbProps').innerHTML = PROPS.map(p => {
+    const cnt = S.units.filter(u=>u.property===p.name).length;
+    return `<div class="spr ${S.selected===p.name?'active':''}" onclick="selectProp('${p.name}')">
+      <div class="sp-dot" style="background:${p.hex}"></div>
+      <div class="sp-name">${p.name}</div>
+      <div class="sp-cnt">${cnt}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════ 4. PROPERTY CARDS ══════════════ */
+function renderPropCards(anim) {
+  document.getElementById('pgrid').innerHTML = PROPS.map(p => {
+    const units = S.units.filter(u=>u.property===p.name);
+    const occ   = units.filter(u=>u.status==='Occupied'||u.status==='New Tenant').length;
+    const vac   = units.filter(u=>u.status==='Vacant').length;
+    const rev   = units.reduce((s,u)=>s+(Number(u.price)||0),0);
+    const pct   = units.length>0 ? Math.round((occ/units.length)*100) : 0;
+    const C     = 2*Math.PI*15; // r=15
+    const dash  = (pct/100)*C;
+    const isSel = S.selected===p.name;
+
+    return `
+      <div class="pc ${isSel?'active':''}" onclick="selectProp('${p.name}')">
+        <div class="pc-bar" style="background:${p.hex}"></div>
+        <div class="pc-head">
+          <div>
+            <div class="pc-name">${p.emoji} ${p.name}</div>
+            <div class="pc-loc">${p.loc}</div>
+          </div>
+          <div class="donut">
+            <svg viewBox="0 0 40 40">
+              <circle cx="20" cy="20" r="15" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="5"/>
+              <circle cx="20" cy="20" r="15" fill="none" stroke="${p.hex}" stroke-width="5"
+                stroke-dasharray="${dash.toFixed(2)} ${C.toFixed(2)}"
+                stroke-linecap="round" style="transition:stroke-dasharray .6s ease"/>
+            </svg>
+            <div class="donut-lbl">${pct}%</div>
+          </div>
+        </div>
+        <div class="pc-info">
+          <span>${units.length} unit${units.length!==1?'s':''}</span>
+          ${isSel?`<span style="margin-left:auto;font-size:9.5px;color:${p.hex};font-weight:700">● VIEWING</span>`:''}
+        </div>
+        <div class="pc-stats">
+          <div class="pcs"><div class="pcs-v" style="color:${p.hex}">${occ}</div><div class="pcs-l">Occupied</div></div>
+          <div class="pcs"><div class="pcs-v">${vac}</div><div class="pcs-l">Vacant</div></div>
+          <div class="pcs"><div class="pcs-v" style="font-size:13px">${rev>0?fmtRev(rev):'—'}</div><div class="pcs-l">Revenue</div></div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ══════════════ 5. UNITS TABLE ══════════════ */
+function renderTable(anim=false) {
+  // Build filtered list
+  let list = S.selected ? S.units.filter(u=>u.property===S.selected) : [...S.units];
+  if      (S.tab==='occ') list = list.filter(u=>u.status==='Occupied'||u.status==='New Tenant');
+  else if (S.tab==='vac') list = list.filter(u=>u.status==='Vacant'||u.status==='Overdue');
+
+  // Tenant role: only show their own unit(s).
+  // (The backend already scopes /products by role, so this is mostly a
+  // safety net — but harmless to keep for the "within-property" filter view.)
+  if (CURRENT_USER && CURRENT_USER.role === 'tenant') {
+    const tName = `${CURRENT_USER.firstName} ${CURRENT_USER.lastName}`.trim().toLowerCase();
+    list = list.filter(u => (u.tenant||'').toLowerCase().includes(tName) || (u.tenant||'').toLowerCase() === tName);
+  }
+
+  // Update header
+  const p   = S.selected ? pi(S.selected) : null;
+  const cnt = list.length;
+
+  const role = CURRENT_USER ? CURRENT_USER.role : '';
+  const SCOPE_LABELS = {
+    'maintenance-staff': '🔧 Units Currently Under Maintenance',
+    'tenant':            '🏠 My Unit',
+  };
+  const agencyWideLabel = SCOPE_LABELS[role] || '🏢 All Units — Agency Wide';
+
+  document.getElementById('utitle-txt').textContent       = S.selected || 'All Units';
+  document.getElementById('uaccent').style.background     = p ? p.hex : 'var(--copper)';
+  document.getElementById('units-lbl').textContent        = S.selected
+    ? `${p.emoji} ${S.selected} — Units`
+    : agencyWideLabel;
+  document.getElementById('tb-title').textContent         = S.selected ? p.name : 'Agency Dashboard';
+  document.getElementById('tb-sub').textContent           = S.selected
+    ? `${p.emoji} ${p.loc} · Meridian Properties`
+    : 'Meridian Properties · 6 Buildings · Nairobi, KE';
+
+  const ce = document.getElementById('ucnt');
+  if (ce.textContent!==String(cnt)){ ce.textContent=cnt; if(anim) flash('ucnt'); }
+
+  const body = document.getElementById('ubody');
+
+  if (list.length===0) {
+    body.innerHTML = `<div class="empty">
+      <div class="eico">${p?p.emoji:'🏢'}</div>
+      No units${S.selected?' in '+S.selected:''} yet.<br>Register one using the form →
+    </div>`;
+    return;
+  }
+
+  body.innerHTML = `
+    <table class="utable">
+      <thead><tr>
+        <th>Unit</th>
+        <th>Property</th>
+        <th>Tenant</th>
+        <th>Floor</th>
+        <th>Rent (KES)</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr></thead>
+      <tbody>
+        ${list.map((u,i) => {
+          const tenant = u.tenant || '—';
+          const unit   = u.name   || '—';
+          const ac     = avColor(tenant+unit);
+          const prp    = pi(u.property);
+          return `
+            <tr class="${anim&&i===0?'new-row':''}">
+              <td>
+                <div class="tcell">
+                  <div class="tav" style="background:${ac[0]};color:${ac[1]}">${ini(tenant)}</div>
+                  <div><div class="tname">${unit}</div><div class="tunit">${tenant}</div></div>
+                </div>
+              </td>
+              <td>
+                <div class="pbadge">
+                  <div class="pbdot" style="background:${prp.hex}"></div>
+                  ${u.property||'—'}
+                </div>
+              </td>
+              <td style="color:var(--t2)">${tenant}</td>
+              <td style="color:var(--t2)">${u.floor?'Fl. '+u.floor:'—'}</td>
+              <td style="font-weight:600">${u.price?fmt(u.price):'—'}</td>
+              <td><span class="pill ${PILL[u.status]||'p-copper'}">${u.status||'—'}</span></td>
+              <td>
+                <div class="btns">
+                  <button class="act-btn edit-btn" onclick='openEdit(${JSON.stringify(u)})'>✏️ Edit</button>
+                  <button class="act-btn del-btn" onclick="deleteUnit('${u._id}','${unit}')">🗑 Delete</button>
+                </div>
+              </td>
+            </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+
+/* ══════════════ SELECT PROPERTY ══════════════ */
+function selectProp(name) {
+  // Toggle: click same = deselect
+  S.selected = S.selected === name ? null : name;
+  S.tab = 'all';
+  resetTabs();
+
+  // Sync form dropdown to selected property
+  if (S.selected) {
+    document.getElementById('f-prop').value = S.selected;
+    syncFormIndicator();
+  }
+
+  renderAll();
+
+  // Scroll to units table
+  setTimeout(() =>
+    document.getElementById('units-lbl').scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+}
+
+function showAll(e) {
+  if (e) e.preventDefault();
+  S.selected = null;
+  renderAll();
+}
+
+/* ══════════════ TABS ══════════════ */
+function switchTab(t) {
+  S.tab = t;
+  resetTabs();
+  document.getElementById(`tab-${t}`).classList.add('active');
+  renderTable();
+}
+
+function resetTabs() {
+  ['all','occ','vac'].forEach(t => document.getElementById(`tab-${t}`).classList.toggle('active', t === S.tab));
+}
+
+/* ══════════════ ADD UNIT ══════════════ */
+async function addUnit() {
+  const property = document.getElementById('f-prop').value;
+  const unit     = document.getElementById('f-unit').value.trim();
+  const floor    = document.getElementById('f-floor').value.trim();
+  const tenant   = document.getElementById('f-tenant').value.trim();
+  const rent     = document.getElementById('f-rent').value.trim();
+  const status   = document.getElementById('f-status').value;
+  const msg      = document.getElementById('fmsg');
+  const btn      = document.getElementById('saveBtn');
+
+  if (!unit || !rent) { showMsg(msg,'❌ Unit number and rent are required','err'); return; }
+
+  btn.disabled = true; btn.textContent = 'Saving...';
+
+  try {
+    const res  = await apiFetch(`${API}/products`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: unit, price: Number(rent),
+        property, tenant: tenant||'—', floor: floor||'—', status
+      })
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      showMsg(msg, `✅ Unit "${data.name}" added to ${property}!`, 'ok');
+
+      // Clear inputs — keep property + status
+      ['f-unit','f-floor','f-tenant','f-rent'].forEach(id => document.getElementById(id).value = '');
+
+      // Auto-switch view to the property where unit was just added
+      S.selected = property;
+      S.tab = 'all';
+      resetTabs();
+
+      // Pull fresh data → triggers full reactive re-render
+      await fetchUnits();
+
+      // Scroll to units table to see new entry highlighted
+      setTimeout(() =>
+        document.getElementById('units-lbl').scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
+    } else {
+      showMsg(msg, `❌ ${data.message}`, 'err');
+    }
+  } catch {
+    showMsg(msg, '❌ Cannot reach server — run npm run dev', 'err');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Save Unit to Database →';
+  }
+}
+
+/* ══════════════ EDIT MODAL ══════════════ */
+function openEdit(unit) {
+  document.getElementById('m-id').value     = unit._id;
+  document.getElementById('m-prop').value   = unit.property || PROPS[0].name;
+  document.getElementById('m-unit').value   = unit.name     || '';
+  document.getElementById('m-floor').value  = unit.floor    || '';
+  document.getElementById('m-tenant').value = unit.tenant   || '';
+  document.getElementById('m-rent').value   = unit.price    || '';
+  document.getElementById('m-status').value = unit.status   || 'Occupied';
+  document.getElementById('editOverlay').classList.add('open');
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('editOverlay'))
+    document.getElementById('editOverlay').classList.remove('open');
+}
+
+async function saveEdit() {
+  const id       = document.getElementById('m-id').value;
+  const property = document.getElementById('m-prop').value;
+  const unit     = document.getElementById('m-unit').value.trim();
+  const floor    = document.getElementById('m-floor').value.trim();
+  const tenant   = document.getElementById('m-tenant').value.trim();
+  const rent     = document.getElementById('m-rent').value.trim();
+  const status   = document.getElementById('m-status').value;
+
+  if (!unit || !rent) { alert('Unit number and rent are required'); return; }
+
+  try {
+    const res = await apiFetch(`${API}/products/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: unit, price: Number(rent),
+        property, tenant: tenant||'—', floor: floor||'—', status
+      })
+    });
+
+    if (res.ok) {
+      document.getElementById('editOverlay').classList.remove('open');
+
+      // If the property was changed, follow the unit to its new property
+      S.selected = property;
+      S.tab = 'all';
+      resetTabs();
+
+      await fetchUnits(); // reactive re-render of everything
+    } else {
+      const d = await res.json();
+      alert(`❌ ${d.message}`);
+    }
+  } catch {
+    alert('❌ Cannot reach server.');
+  }
+}
+
+/* ══════════════ DELETE UNIT ══════════════ */
+async function deleteUnit(id, name) {
+  if (!confirm(`Permanently remove unit "${name}"?`)) return;
+  try {
+    await apiFetch(`${API}/products/${id}`, { method: 'DELETE' });
+    await fetchUnits(); // full reactive re-render
+  } catch {
+    alert('❌ Cannot connect to server.');
+  }
+}
+
+/* ══════════════ FORM INDICATOR ══════════════ */
+function syncFormIndicator() {
+  const p = pi(document.getElementById('f-prop').value);
+  document.getElementById('fpi-dot').style.background = p.hex;
+  document.getElementById('fpi-txt').textContent      = `Adding to: ${p.emoji} ${p.name}`;
+}
+
+function onPropChange() {
+  syncFormIndicator();
+  // Also switch the view to that property so user sees live updates
+  const chosen = document.getElementById('f-prop').value;
+  if (chosen && chosen !== S.selected) {
+    S.selected = chosen;
+    S.tab = 'all';
+    resetTabs();
+    renderAll();
+  }
+}
+
+/* ══════════════ CONNECTION BAR ══════════════ */
+function setConn(ok) {
+  document.getElementById('cdot').className = ok ? 'cdot live' : 'cdot dead';
+  document.getElementById('ctext').textContent = ok
+    ? '✅  Live · Express server & MongoDB connected · Meridian Properties'
+    : '❌  Server offline — run npm run dev in your terminal';
+}
+
+/* ══════════════ STATUS MESSAGES ══════════════ */
+function showMsg(el, msg, type) {
+  el.textContent = msg; el.className = `fmsg ${type}`;
+  setTimeout(() => { el.textContent = ''; el.className = 'fmsg'; }, 4500);
+}
+
+/* ══════════════ FOCUS FORM ══════════════ */
+function focusForm() {
+  document.getElementById('addForm').scrollIntoView({ behavior: 'smooth' });
+  setTimeout(() => document.getElementById('f-unit').focus(), 400);
+}
+
+/* ══════════════ NAV ══════════════ */
+document.querySelectorAll('.ni').forEach(n => {
+  n.addEventListener('click', e => {
+    const href = n.getAttribute('href') || '';
+    // Only block default for same-page anchor (Overview resets view)
+    if (href === '#' || href === 'dashboard.html') {
+      e.preventDefault();
+    }
+    // Update active state visually
+    document.querySelectorAll('.ni').forEach(x => x.classList.remove('active'));
+    n.classList.add('active');
+  });
+});
+
+/* Live badge counts from API */
+async function updateBadges() {
+  try {
+    const [mRes, pRes] = await Promise.all([
+      apiFetch(`${API}/maintenance`).catch(()=>null),
+      apiFetch(`${API}/payments`).catch(()=>null),
+    ]);
+    if (mRes && mRes.ok) {
+      const mo = await mRes.json();
+      const openMaint = mo.filter(o => o.status === 'Open' || o.status === 'In Progress').length;
+      const mb = document.getElementById('maint-badge');
+      if (mb) mb.textContent = openMaint || '';
+    }
+    if (pRes && pRes.ok) {
+      const po = await pRes.json();
+      const overdue = po.filter(p => p.status === 'Overdue' || p.status === 'Pending').length;
+      const pb = document.getElementById('pay-badge');
+      if (pb) pb.textContent = overdue || '';
+    }
+  } catch {}
+}
+updateBadges();
+setInterval(updateBadges, 15000);
+
+/* ══════════════ LIVE CLOCK ══════════════ */
+(function tick() {
+  document.getElementById('clock').textContent =
+    new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  setTimeout(tick, 1000);
+})();
+
+/* ══════════════ USER SESSION & PROFILE ══════════════ */
+
+const ROLE_LABELS = {
+  'agency-director':  '🏢 Agency Director',
+  'property-manager': '🗝 Property Manager',
+  'finance-officer':  '💰 Finance Officer',
+  'maintenance-staff':'🔧 Maintenance Staff',
+  'leasing-agent':    '📋 Leasing Agent',
+  'tenant':           '🏠 Tenant',
+  'auditor':          '📊 Auditor / Viewer',
+};
+
+let CURRENT_USER = null;
+let NEW_AVATAR_B64 = null; // stores base64 of newly chosen avatar
+
+/* Load session from sessionStorage and paint the sidebar */
+function loadUserSession() {
+  const raw = sessionStorage.getItem('mp_session');
+  if (!raw) return; // no session — user may not be logged in
+
+  CURRENT_USER = JSON.parse(raw);
+  paintSidebar(CURRENT_USER);
+}
+
+function paintSidebar(u) {
+  if (!u) return;
+  const fullName  = `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Unknown';
+  const roleLabel = ROLE_LABELS[u.role] || u.role || '—';
+  const initials  = ((u.firstName||'?')[0] + (u.lastName||'?')[0]).toUpperCase();
+
+  /* ── Sidebar footer small avatar ── */
+  const sbAv = document.getElementById('sbAvatar');
+  if (u.avatar) {
+    sbAv.innerHTML = `<img src="${u.avatar}" alt="${fullName}"/>`;
+  } else {
+    sbAv.textContent = initials;
+    sbAv.style.backgroundImage = '';
+  }
+  document.getElementById('sbName').textContent = fullName;
+  document.getElementById('sbRole').textContent = roleLabel;
+
+  /* ── Drawer header ── */
+  const drAv = document.getElementById('drawerAvatar');
+  if (u.avatar) {
+    drAv.innerHTML = `<img src="${u.avatar}" alt="${fullName}"/>`;
+  } else {
+    drAv.textContent = initials;
+  }
+  document.getElementById('drawerName').textContent  = fullName;
+  document.getElementById('drawerEmail').textContent = u.email || '—';
+  document.getElementById('drawerRole').textContent  = roleLabel;
+
+  /* ── Topbar greeting ── */
+  document.getElementById('tb-sub').textContent =
+    `Meridian Properties · 6 Buildings · Signed in as ${fullName}`;
+
+  /* ── Apply role-based restrictions (runs once after session loads) ── */
+  if (!window._roleApplied) {
+    window._roleApplied = true;
+    // Slight delay so DOM nav items are all rendered
+    setTimeout(() => applyRoleRestrictions(u.role), 50);
+  }
+}
+
+/* ── Toggle drawer open/close ── */
+function toggleUserDrawer() {
+  document.getElementById('userDrawer').classList.toggle('open');
+}
+
+/* Close drawer when clicking elsewhere */
+document.addEventListener('click', e => {
+  const foot   = document.getElementById('sbFoot');
+  const drawer = document.getElementById('userDrawer');
+  if (drawer.classList.contains('open') && !foot.contains(e.target)) {
+    drawer.classList.remove('open');
+  }
+});
+
+/* ── Open edit profile modal ── */
+function openEditProfile() {
+  document.getElementById('userDrawer').classList.remove('open');
+  if (!CURRENT_USER) return;
+
+  const u = CURRENT_USER;
+  document.getElementById('p-first').value    = u.firstName || '';
+  document.getElementById('p-last').value     = u.lastName  || '';
+  document.getElementById('p-phone').value    = u.phone     || '';
+  document.getElementById('p-role').value     = u.role      || 'agency-director';
+  document.getElementById('p-password').value = '';
+
+  /* Preview current avatar */
+  const preview = document.getElementById('profAvatarPreview');
+  const initials = ((u.firstName||'?')[0]+(u.lastName||'?')[0]).toUpperCase();
+  if (u.avatar) {
+    preview.innerHTML = `<img src="${u.avatar}" alt="avatar"/>`;
+  } else {
+    preview.textContent = initials;
+    preview.style.backgroundImage = '';
+  }
+
+  NEW_AVATAR_B64 = null;
+  document.getElementById('profMsg').className = 'prof-msg';
+  document.getElementById('profMsg').textContent = '';
+  document.getElementById('profOverlay').classList.add('open');
+}
+
+/* Handle avatar file pick → convert to base64 for preview */
+function handleAvatarChange(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) {
+    alert('Image too large — please choose a file under 2 MB.'); return;
+  }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    NEW_AVATAR_B64 = ev.target.result;
+    const preview = document.getElementById('profAvatarPreview');
+    preview.innerHTML = `<img src="${NEW_AVATAR_B64}" alt="avatar"/>`;
+
+    /* Also update sidebar live preview */
+    const sbAv = document.getElementById('sbAvatar');
+    sbAv.innerHTML = `<img src="${NEW_AVATAR_B64}" alt="avatar"/>`;
+    document.getElementById('drawerAvatar').innerHTML = `<img src="${NEW_AVATAR_B64}" alt="avatar"/>`;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ── Save profile changes → PUT to API → update session ── */
+async function saveProfile() {
+  const firstName = document.getElementById('p-first').value.trim();
+  const lastName  = document.getElementById('p-last').value.trim();
+  const phone     = document.getElementById('p-phone').value.trim();
+  const role      = document.getElementById('p-role').value;
+  const password  = document.getElementById('p-password').value;
+  const msgEl     = document.getElementById('profMsg');
+
+  if (!firstName || !lastName) {
+    msgEl.textContent = '❌ First and last name are required.';
+    msgEl.className   = 'prof-msg err'; return;
+  }
+
+  const body = { firstName, lastName, phone, role };
+  if (password) {
+    if (password.length < 8) {
+      msgEl.textContent = '❌ New password must be at least 8 characters.';
+      msgEl.className   = 'prof-msg err'; return;
+    }
+    body.password = password;
+  }
+  if (NEW_AVATAR_B64) body.avatar = NEW_AVATAR_B64;
+
+  try {
+    const res  = await apiFetch(`${API}/auth/users/${CURRENT_USER._id}`, {
+      method:  'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(body),
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      /* Merge updates into current session and re-save */
+      CURRENT_USER = { ...CURRENT_USER, ...data.user };
+      sessionStorage.setItem('mp_session', JSON.stringify({ ...CURRENT_USER, loggedIn: true }));
+      paintSidebar(CURRENT_USER);
+
+      msgEl.textContent = '✅ Profile updated successfully!';
+      msgEl.className   = 'prof-msg ok';
+      setTimeout(() => {
+        document.getElementById('profOverlay').classList.remove('open');
+        msgEl.textContent = ''; msgEl.className = 'prof-msg';
+      }, 1800);
+    } else {
+      msgEl.textContent = `❌ ${data.message}`;
+      msgEl.className   = 'prof-msg err';
+    }
+  } catch {
+    msgEl.textContent = '❌ Cannot reach server.';
+    msgEl.className   = 'prof-msg err';
+  }
+}
+
+/* ── Close edit modal ── */
+function closeProfModal(e) {
+  if (!e || e.target === document.getElementById('profOverlay')) {
+    document.getElementById('profOverlay').classList.remove('open');
+  }
+}
+
+/* ── Log out ── */
+function handleLogout() {
+  if (!confirm('Log out of Meridian Properties?')) return;
+  sessionStorage.removeItem('mp_session');
+  window.location.href = 'auth.html';
+}
+
+/* ── Delete account ── */
+async function handleDeleteAccount() {
+  if (!CURRENT_USER) return;
+  if (!confirm(`Permanently delete the account for ${CURRENT_USER.firstName} ${CURRENT_USER.lastName}?\n\nThis cannot be undone.`)) return;
+
+  try {
+    const res = await apiFetch(`${API}/auth/users/${CURRENT_USER._id}`, { method: 'DELETE' });
+    if (res.ok) {
+      alert('Account deleted. You will be redirected to the sign-in page.');
+      sessionStorage.removeItem('mp_session');
+      window.location.href = 'auth.html';
+    } else {
+      const d = await res.json();
+      alert(`❌ ${d.message}`);
+    }
+  } catch {
+    alert('❌ Cannot reach server.');
+  }
+}
+
+/* ══════════════ ROLE-BASED ACCESS ══════════════ */
+const ROLE_ACCESS = {
+  'agency-director':  { pages:['overview','analytics','tenants','maintenance','payments','documents'], canEdit:true,  canAdd:true  },
+  'property-manager': { pages:['overview','analytics','tenants','maintenance'],                        canEdit:true,  canAdd:true  },
+  'finance-officer':  { pages:['overview','analytics','payments'],                                     canEdit:true,  canAdd:false },
+  'maintenance-staff':{ pages:['overview','maintenance'],                                              canEdit:true,  canAdd:false },
+  'leasing-agent':    { pages:['overview','tenants'],                                                  canEdit:true,  canAdd:true  },
+  'tenant':           { pages:['overview'],                                                            canEdit:false, canAdd:false },
+  'auditor':          { pages:['overview','analytics'],                                                canEdit:false, canAdd:false },
+};
+
+const PAGE_HREFS = {
+  'analytics':    'analytics.html',
+  'tenants':      'tenants.html',
+  'maintenance':  'maintenance.html',
+  'payments':     'payments.html',
+  'documents':    'documents.html',
+};
+
+function applyRoleRestrictions(role) {
+  const access = ROLE_ACCESS[role] || ROLE_ACCESS['auditor'];
+
+  /* ── Hide/lock nav items not in role ── */
+  document.querySelectorAll('.ni').forEach(link => {
+    const href = link.getAttribute('href') || '';
+    const page = Object.keys(PAGE_HREFS).find(k => PAGE_HREFS[k] === href);
+    if (!page) return; // Overview & same-page links always visible
+    if (!access.pages.includes(page)) {
+      link.style.opacity = '.3';
+      link.style.pointerEvents = 'none';
+      link.style.cursor = 'not-allowed';
+      link.title = `Not available for ${role.replace('-',' ')}`;
+    }
+  });
+
+  /* ── Hide Add Unit button if no add permission ── */
+  const addBtn = document.querySelector('.btn.cta');
+  if (addBtn && !access.canAdd) {
+    addBtn.style.display = 'none';
+  }
+
+  /* ── Hide form panel if no add permission ── */
+  const formPanel = document.getElementById('addForm');
+  if (formPanel && !access.canAdd) {
+    formPanel.style.display = 'none';
+  }
+
+  /* ── Hide edit/delete buttons in table if no edit permission ── */
+  if (!access.canEdit) {
+    const style = document.createElement('style');
+    style.textContent = '.edit-btn, .del-btn { display: none !important; }';
+    document.head.appendChild(style);
+  }
+
+  /* ── Tenant-specific: filter table to only their units ── */
+  if (role === 'tenant' && CURRENT_USER) {
+    const name = `${CURRENT_USER.firstName} ${CURRENT_USER.lastName}`.trim();
+    // Override renderTable to filter by this tenant's name
+    const origRender = window.renderTable;
+    window._tenantName = name;
+  }
+
+  /* ── Show role banner ── */
+  const conn = document.querySelector('.conn');
+  if (conn && role !== 'agency-director') {
+    const banner = document.createElement('div');
+    const roleColors = {
+      'property-manager':'rgba(184,131,74,.12)','finance-officer':'rgba(74,158,245,.12)',
+      'maintenance-staff':'rgba(245,166,35,.12)','leasing-agent':'rgba(62,207,142,.12)',
+      'tenant':'rgba(139,143,245,.12)','auditor':'rgba(62,207,142,.12)',
+    };
+    const roleNames = {
+      'property-manager':'🗝 Property Manager','finance-officer':'💰 Finance Officer',
+      'maintenance-staff':'🔧 Maintenance Staff','leasing-agent':'📋 Leasing Agent',
+      'tenant':'🏠 Tenant Portal','auditor':'📊 Auditor — Read Only',
+    };
+    banner.style.cssText = `padding:7px 14px;background:${roleColors[role]||'rgba(184,131,74,.12)'};border-bottom:1px solid var(--border);font-size:11.5px;color:var(--t1);display:flex;align-items:center;gap:8px;`;
+    banner.innerHTML = `<span>${roleNames[role]||role}</span><span style="margin-left:auto;font-size:10.5px;color:var(--t2)">Access limited to permitted sections</span>`;
+    conn.insertAdjacentElement('afterend', banner);
+  }
+}
+
+/* ══════════════ INIT ══════════════ */
+loadUserSession();        // ← was missing — now called first so user is painted immediately
+syncFormIndicator();
+fetchUnits();
+document.getElementById('dash-year').textContent = new Date().getFullYear();
+
+// Auto-poll every 5 seconds — keeps dashboard live across devices/tabs
+setInterval(fetchUnits, 5000);
+</script>
+</body>
+</html>

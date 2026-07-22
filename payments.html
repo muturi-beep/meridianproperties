@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Meridian Properties — Payments</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --ink:#0c0f18;--ink-2:#131722;--ink-3:#1a2030;--ink-4:#222840;
+      --copper:#b8834a;--copper-l:#d4a46a;--copper-dim:rgba(184,131,74,.14);
+      --white:#fff;--t1:#edf0f8;--t2:#7a83a0;--t3:#3a4260;
+      --border:rgba(255,255,255,.06);--border-2:rgba(255,255,255,.10);
+      --green:#3ecf8e;--green-bg:rgba(62,207,142,.12);
+      --amber:#f5a623;--amber-bg:rgba(245,166,35,.12);
+      --red:#f06060;--red-bg:rgba(240,96,96,.12);
+      --blue:#4a9ef5;--blue-bg:rgba(74,158,245,.12);
+      --purple:#8b8ff5;--purple-bg:rgba(139,143,245,.12);
+      --r:14px;--rs:8px;--shadow:0 16px 48px rgba(0,0,0,.45);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:'Outfit',sans-serif;background:var(--ink);color:var(--t1);min-height:100vh;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.014) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.014) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+    body::after{content:'';position:fixed;top:-180px;right:-140px;width:560px;height:560px;background:radial-gradient(circle,rgba(62,207,142,.06) 0%,transparent 70%);pointer-events:none;z-index:0}
+
+    .shell{display:grid;grid-template-columns:248px 1fr;min-height:100vh;position:relative;z-index:1}
+
+    /* ══ SIDEBAR ══ */
+    .sidebar{background:var(--ink-2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+    .sb-brand{padding:22px 20px 16px;border-bottom:1px solid var(--border)}
+    .brand-row{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+    .emblem{width:34px;height:34px;background:linear-gradient(135deg,var(--copper),var(--copper-l));border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .emblem svg{width:18px;height:18px}
+    .brand-name{font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:700;color:var(--white);line-height:1.15}
+    .brand-sub{font-size:9px;color:var(--t3);letter-spacing:.14em;text-transform:uppercase;margin-top:4px}
+    .sb-nav{padding:12px;flex:1}
+    .ng{font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--t3);padding:10px 8px 4px}
+    .ni{display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:var(--rs);font-size:13px;color:var(--t2);cursor:pointer;margin-bottom:1px;transition:all .15s;text-decoration:none;position:relative}
+    .ni:hover{background:rgba(255,255,255,.04);color:var(--t1)}
+    .ni.active{background:var(--copper-dim);color:var(--copper-l);font-weight:500}
+    .ni.active::before{content:'';position:absolute;left:0;top:25%;bottom:25%;width:2px;background:var(--copper);border-radius:2px}
+    .ni-ico{width:14px;height:14px;flex-shrink:0;opacity:.65}
+    .ni.active .ni-ico{opacity:1}
+    .nbadge{margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:600;border-radius:20px;padding:1px 6px}
+    .sb-foot{padding:13px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px}
+    .sav{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--copper),var(--copper-l));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--ink);overflow:hidden;flex-shrink:0}
+    .sav img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+    .sun{font-size:12.5px;font-weight:500;color:var(--t1)}
+    .sur{font-size:10px;color:var(--t2);margin-top:1px}
+
+    /* ══ TOPBAR ══ */
+    .topbar{background:var(--ink-2);border-bottom:1px solid var(--border);padding:13px 26px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:30}
+    .tb-left{display:flex;align-items:center;gap:14px}
+    .tb-back{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:var(--rs);border:1px solid var(--border-2);font-size:12px;color:var(--t2);text-decoration:none;transition:all .15s;font-family:'Outfit',sans-serif}
+    .tb-back:hover{color:var(--copper-l);border-color:var(--copper-dim);background:var(--copper-dim)}
+    .tb-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--white)}
+    .tb-sub{font-size:11.5px;color:var(--t2);margin-top:1px}
+    .tb-r{display:flex;align-items:center;gap:9px}
+    .lc{font-size:11px;color:var(--t2);display:flex;align-items:center;gap:5px}
+    .ld{width:6px;height:6px;border-radius:50%;background:var(--green);animation:glow 2s infinite}
+    @keyframes glow{0%,100%{box-shadow:0 0 0 3px var(--green-bg)}50%{box-shadow:0 0 0 6px rgba(62,207,142,.04)}}
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--rs);border:1px solid var(--border-2);font-size:12px;font-weight:500;color:var(--t2);background:transparent;cursor:pointer;transition:all .15s;font-family:'Outfit',sans-serif}
+    .btn:hover{border-color:var(--copper-dim);color:var(--t1);background:var(--copper-dim)}
+    .btn.cta{background:var(--green);border-color:var(--green);color:var(--ink);font-weight:700}
+    .btn.cta:hover{background:#32b87a}
+
+    /* ══ CONN BAR ══ */
+    .conn{display:flex;align-items:center;gap:9px;padding:8px 14px;background:var(--ink-3);border-bottom:1px solid var(--border);font-size:11.5px;color:var(--t2)}
+    .cdot{width:7px;height:7px;border-radius:50%;background:var(--t3);flex-shrink:0;transition:all .3s}
+    .cdot.live{background:var(--green);box-shadow:0 0 0 3px var(--green-bg);animation:glow 2s infinite}
+    .cdot.dead{background:var(--red);box-shadow:0 0 0 3px var(--red-bg)}
+
+    /* ══ MAIN ══ */
+    .main{padding:22px 26px 48px}
+    .slbl{font-size:9.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--t3);margin:26px 0 13px}
+    .slbl:first-child{margin-top:0}
+    @keyframes up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+    /* ══ KPI CARDS ══ */
+    .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:8px}
+    .kc{background:var(--ink-2);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;position:relative;overflow:hidden;animation:up .5s ease both;cursor:pointer;transition:all .2s}
+    .kc:nth-child(1){animation-delay:.04s}.kc:nth-child(2){animation-delay:.08s}.kc:nth-child(3){animation-delay:.12s}.kc:nth-child(4){animation-delay:.16s}
+    .kc::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:var(--r) var(--r) 0 0}
+    .kc.g::after{background:var(--green)}.kc.c::after{background:var(--copper)}.kc.a::after{background:var(--amber)}.kc.r::after{background:var(--red)}
+    .kc:hover{border-color:var(--border-2);transform:translateY(-2px)}
+    .kc-ico{font-size:18px;margin-bottom:9px}
+    .kc-lbl{font-size:10.5px;color:var(--t2);font-weight:500;margin-bottom:4px}
+    .kc-val{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;color:var(--white);letter-spacing:-.03em;line-height:1}
+    .kc-sub{font-size:10.5px;margin-top:5px;color:var(--t2)}
+
+    /* ══ REVENUE BAR ══ */
+    .rev-section{background:var(--ink-2);border:1px solid var(--border);border-radius:var(--r);padding:20px 22px;margin-bottom:8px;animation:up .5s ease .1s both}
+    .rev-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    .rev-title{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:700;color:var(--white)}
+    .rev-sub{font-size:11px;color:var(--t2);margin-top:2px}
+    .prop-bars{display:flex;flex-direction:column;gap:12px}
+    .pb-row{display:flex;align-items:center;gap:12px}
+    .pb-label{font-size:11.5px;color:var(--t2);width:150px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .pb-track{flex:1;height:7px;background:var(--ink-3);border-radius:4px;overflow:hidden}
+    .pb-fill{height:100%;border-radius:4px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+    .pb-val{font-size:11px;font-weight:600;color:var(--t1);min-width:64px;text-align:right;flex-shrink:0}
+    .pb-pct{font-size:10px;color:var(--t2);min-width:30px;text-align:right;flex-shrink:0}
+
+    /* ══ PAGE GRID ══ */
+    .page-grid{display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start}
+
+    /* ══ TOOLBAR ══ */
+    .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+    .sw{position:relative;flex:1;min-width:200px}
+    .sw-ico{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none}
+    .si{width:100%;background:var(--ink-2);border:1px solid var(--border);border-radius:var(--rs);padding:9px 12px 9px 34px;font-size:13px;color:var(--t1);font-family:'Outfit',sans-serif;outline:none;transition:border-color .2s}
+    .si:focus{border-color:var(--copper)}
+    .si::placeholder{color:var(--t3)}
+    .selw{position:relative}
+    .selw::after{content:'▾';position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--t2);font-size:11px;pointer-events:none}
+    .fsel{background:var(--ink-2);border:1px solid var(--border);border-radius:var(--rs);padding:9px 28px 9px 12px;font-size:12.5px;color:var(--t1);font-family:'Outfit',sans-serif;outline:none;cursor:pointer;appearance:none;transition:border-color .2s;min-width:130px}
+    .fsel:focus{border-color:var(--copper)}
+    .fsel option{background:var(--ink-3)}
+
+    /* ══ PAYMENTS TABLE ══ */
+    .pay-panel{background:var(--ink-2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;animation:up .5s ease .15s both}
+    .pay-panel-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .pay-panel-title{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:700;color:var(--white);display:flex;align-items:center;gap:8px}
+    .ptable{width:100%;border-collapse:collapse}
+    .ptable th{font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--t3);border-bottom:1px solid var(--border);padding:0 14px 10px;text-align:left;white-space:nowrap}
+    .ptable td{font-size:12.5px;color:var(--t1);padding:12px 14px;border-bottom:1px solid var(--border)}
+    .ptable tbody tr:last-child td{border-bottom:none}
+    .ptable tbody tr{transition:background .12s;cursor:pointer}
+    .ptable tbody tr:hover td{background:rgba(255,255,255,.025)}
+    .ptable-inner{padding:4px 0 2px;overflow-x:auto}
+    .t-cell{display:flex;align-items:center;gap:9px}
+    .t-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+    .t-name{font-weight:500}
+    .t-unit{font-size:10.5px;color:var(--t2);margin-top:1px}
+    .prop-badge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px}
+    .prop-dot{width:6px;height:6px;border-radius:50%}
+    .pill{display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 9px;border-radius:20px}
+    .p-green{background:var(--green-bg);color:var(--green)}
+    .p-amber{background:var(--amber-bg);color:var(--amber)}
+    .p-red{background:var(--red-bg);color:var(--red)}
+    .p-blue{background:var(--blue-bg);color:var(--blue)}
+    .p-copper{background:var(--copper-dim);color:var(--copper-l)}
+    .p-purple{background:var(--purple-bg);color:var(--purple)}
+    .act-btn{border:1px solid var(--border);border-radius:6px;padding:4px 9px;font-size:10.5px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;background:transparent;white-space:nowrap}
+    .del-btn{color:var(--red);border-color:rgba(240,96,96,.25)}
+    .del-btn:hover{background:var(--red-bg);border-color:var(--red)}
+    .view-btn{color:var(--blue);border-color:rgba(74,158,245,.25)}
+    .view-btn:hover{background:var(--blue-bg);border-color:var(--blue)}
+
+    .empty{text-align:center;padding:40px 20px;color:var(--t3)}
+    .eico{font-size:38px;margin-bottom:10px}
+    .skel{height:52px;background:linear-gradient(90deg,var(--ink-3) 25%,var(--ink-4) 50%,var(--ink-3) 75%);background-size:200% 100%;animation:shim 1.4s infinite;border-radius:var(--rs);margin-bottom:8px}
+    @keyframes shim{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+    /* ══ RECORD PAYMENT FORM ══ */
+    .form-panel{background:var(--ink-2);border:1px solid var(--border);border-radius:var(--r);padding:20px;position:sticky;top:76px;animation:up .5s ease .2s both}
+    .fp-title{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;color:var(--white);margin-bottom:16px;display:flex;align-items:center;gap:7px}
+    .fp-title span{color:var(--green)}
+    .fld{display:flex;flex-direction:column;gap:5px;margin-bottom:11px}
+    .fld label{font-size:9.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--t2)}
+    .fld input,.fld select,.fld textarea{background:var(--ink-3);border:1px solid var(--border);border-radius:var(--rs);padding:9px 11px;font-size:12.5px;color:var(--t1);font-family:'Outfit',sans-serif;outline:none;transition:border-color .2s;appearance:none;width:100%}
+    .fld input:focus,.fld select:focus{border-color:var(--green)}
+    .fld input::placeholder{color:var(--t3)}
+    .fld select option{background:var(--ink-3)}
+    .frow{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+    .sbtn{width:100%;padding:11px;background:linear-gradient(135deg,var(--green),#2db87e);color:var(--ink);border:none;border-radius:var(--rs);font-size:13px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;letter-spacing:.03em;transition:opacity .2s,transform .1s;margin-top:4px}
+    .sbtn:hover{opacity:.9}.sbtn:active{transform:scale(.98)}.sbtn:disabled{opacity:.5;cursor:not-allowed}
+    .fmsg{padding:9px 12px;border-radius:var(--rs);font-size:12px;margin-top:9px;display:none}
+    .fmsg.ok{background:var(--green-bg);color:var(--green);border:1px solid rgba(62,207,142,.2);display:block}
+    .fmsg.err{background:var(--red-bg);color:var(--red);border:1px solid rgba(240,96,96,.2);display:block}
+
+    /* ══ MODAL ══ */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(5px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+    .overlay.open{display:flex}
+    .modal{background:var(--ink-2);border:1px solid var(--border-2);border-radius:20px;width:500px;max-width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.55);animation:mIn .25s ease both}
+    @keyframes mIn{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+    .m-head{padding:22px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px}
+    .m-ico{width:48px;height:48px;border-radius:12px;background:var(--green-bg);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+    .m-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--white);line-height:1.2}
+    .m-sub{font-size:12px;color:var(--t2);margin-top:3px}
+    .m-close{margin-left:auto;background:transparent;border:1px solid var(--border);color:var(--t2);width:30px;height:30px;border-radius:7px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:'Outfit',sans-serif;flex-shrink:0}
+    .m-close:hover{background:var(--red-bg);color:var(--red);border-color:var(--red)}
+    .m-body{padding:20px 24px}
+    .m-sec{margin-bottom:18px}
+    .m-sec-title{font-size:9.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--copper);margin-bottom:12px}
+    .m-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .m-field{background:var(--ink-3);border-radius:var(--rs);padding:11px 13px}
+    .m-field.full{grid-column:span 2}
+    .m-field-lbl{font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:4px}
+    .m-field-val{font-size:13px;color:var(--t1);font-weight:500}
+    .m-btns{display:flex;gap:9px;padding:0 24px 22px}
+    .m-close-btn{flex:1;padding:11px;background:transparent;border:1px solid var(--border-2);color:var(--t2);border-radius:var(--rs);font-size:13px;font-family:'Outfit',sans-serif;cursor:pointer;transition:all .15s}
+    .m-close-btn:hover{border-color:var(--red);color:var(--red)}
+    .m-del-btn{padding:11px 18px;background:var(--red-bg);border:1px solid rgba(240,96,96,.25);color:var(--red);border-radius:var(--rs);font-size:13px;font-weight:600;font-family:'Outfit',sans-serif;cursor:pointer;transition:all .15s}
+    .m-del-btn:hover{background:rgba(240,96,96,.25)}
+
+    /* ══ FOOTER ══ */
+    .dash-footer{padding:14px 26px;background:var(--ink-2);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--t3);flex-wrap:wrap;gap:8px;margin-top:28px}
+    .dash-footer a{color:var(--t3);text-decoration:none;transition:color .15s}
+    .dash-footer a:hover{color:var(--copper-l)}
+    .dash-footer strong{color:var(--copper);font-weight:600}
+
+    /* ══ RESPONSIVE ══ */
+    @media(max-width:1050px){.page-grid{grid-template-columns:1fr}.form-panel{position:static}.kpi-row{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:900px){.shell{grid-template-columns:1fr}.sidebar{display:none}}
+    @media(max-width:600px){.main{padding:14px}.frow{grid-template-columns:1fr}.kpi-row{grid-template-columns:repeat(2,1fr)}}
+  </style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ════ SIDEBAR ════ -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="brand-row">
+        <div class="emblem">
+          <svg viewBox="0 0 20 20" fill="none">
+            <path d="M10 2L18 6.5V13.5L10 18L2 13.5V6.5Z" stroke="#0c0f18" stroke-width="1.5"/>
+            <path d="M10 5.5L15 8.5V12.5L10 15.5L5 12.5V8.5Z" fill="#0c0f18" opacity=".35"/>
+          </svg>
+        </div>
+        <div><div class="brand-name">Meridian<br>Properties</div></div>
+      </div>
+      <div class="brand-sub">Agency Management Portal</div>
+    </div>
+    <nav class="sb-nav">
+      <div class="ng">Agency</div>
+      <a class="ni" href="dashboard.html">
+        <svg class="ni-ico" viewBox="0 0 15 15" fill="currentColor"><rect x="1" y="1" width="5.5" height="5.5" rx="1"/><rect x="8.5" y="1" width="5.5" height="5.5" rx="1"/><rect x="1" y="8.5" width="5.5" height="5.5" rx="1"/><rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1"/></svg>
+        Overview
+      </a>
+      <a class="ni" href="analytics.html">
+        <svg class="ni-ico" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><polyline points="1.5,12 4.5,7.5 7.5,9.5 10.5,4 13.5,6"/></svg>
+        Analytics
+      </a>
+      <div class="ng">Operations</div>
+      <a class="ni" href="tenants.html">
+        <svg class="ni-ico" viewBox="0 0 15 15" fill="currentColor"><circle cx="5" cy="4.5" r="2.3"/><path d="M1 13c0-2.5 1.8-4 4-4s4 1.5 4 4"/><circle cx="11" cy="5" r="1.8"/><path d="M13.5 13c0-2-1.2-3.2-2.8-3.5"/></svg>
+        Tenants
+      </a>
+      <a class="ni" href="maintenance.html">
+        <svg class="ni-ico" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="7.5" cy="7.5" r="2"/><path d="M7.5 1v2M7.5 12v2M1 7.5h2M12 7.5h2"/></svg>
+        Maintenance
+      </a>
+      <div class="ng">Finance</div>
+      <a class="ni active" href="payments.html">
+        <svg class="ni-ico" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="7.5" cy="7.5" r="6.5"/><path d="M7.5 4v7M5.5 6c0-1 .9-2 2-2s2 .9 2 2-1.5 1.5-2 2-.5.9-.5 1.5"/></svg>
+        Payments
+      </a>
+      <a class="ni" href="documents.html">
+        <svg class="ni-ico" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M2.5 13h10V5.2L9 1.5H2.5z"/><path d="M8.5 1.5V6H13"/></svg>
+        Documents
+      </a>
+    </nav>
+    <div class="sb-foot">
+      <div class="sav" id="sbAv">??</div>
+      <div><div class="sun" id="sbName">Loading...</div><div class="sur" id="sbRole">—</div></div>
+    </div>
+  </aside>
+
+  <!-- ════ MAIN PANEL ════ -->
+  <div style="display:flex;flex-direction:column;min-height:100vh">
+
+    <header class="topbar">
+      <div class="tb-left">
+        <a class="tb-back" href="dashboard.html">← Dashboard</a>
+        <div>
+          <div class="tb-title">Payments</div>
+          <div class="tb-sub" id="tbSub">Financial Records · Meridian Properties</div>
+        </div>
+      </div>
+      <div class="tb-r">
+        <div class="lc"><div class="ld"></div><span id="clock">--:--:--</span></div>
+        <button class="btn" onclick="loadAll()">↺ Refresh</button>
+        <button class="btn cta" onclick="scrollToForm()">+ Record Payment</button>
+      </div>
+    </header>
+
+    <div class="conn">
+      <div class="cdot" id="cdot"></div>
+      <span id="ctext">Connecting...</span>
+      <span style="margin-left:auto;font-size:10.5px;color:var(--t3)" id="syncLbl"></span>
+    </div>
+
+    <div class="main">
+
+      <!-- KPIs -->
+      <div class="slbl">Financial Overview</div>
+      <div class="kpi-row">
+        <div class="kc g">
+          <div class="kc-ico">💰</div>
+          <div class="kc-lbl">Total Collected</div>
+          <div class="kc-val" id="k-total">—</div>
+          <div class="kc-sub" id="k-total-sub">All time</div>
+        </div>
+        <div class="kc c">
+          <div class="kc-ico">📅</div>
+          <div class="kc-lbl">This Month</div>
+          <div class="kc-val" id="k-month">—</div>
+          <div class="kc-sub" id="k-month-sub">Current period</div>
+        </div>
+        <div class="kc a">
+          <div class="kc-ico">⏳</div>
+          <div class="kc-lbl">Pending</div>
+          <div class="kc-val" id="k-pending">—</div>
+          <div class="kc-sub" style="color:var(--amber)">Awaiting payment</div>
+        </div>
+        <div class="kc r">
+          <div class="kc-ico">⚠️</div>
+          <div class="kc-lbl">Overdue</div>
+          <div class="kc-val" id="k-overdue">—</div>
+          <div class="kc-sub" style="color:var(--red)">Need follow-up</div>
+        </div>
+      </div>
+
+      <!-- Revenue by property bar chart -->
+      <div class="rev-section">
+        <div class="rev-head">
+          <div>
+            <div class="rev-title">Revenue by Property</div>
+            <div class="rev-sub">Total payments collected per building</div>
+          </div>
+        </div>
+        <div class="prop-bars" id="propBars">
+          <div class="skel" style="height:20px"></div>
+          <div class="skel" style="height:20px;opacity:.7"></div>
+          <div class="skel" style="height:20px;opacity:.4"></div>
+        </div>
+      </div>
+
+      <div class="slbl">Payment Records</div>
+
+      <div class="page-grid">
+
+        <!-- Left: table -->
+        <div>
+          <div class="toolbar">
+            <div class="sw">
+              <span class="sw-ico">🔍</span>
+              <input class="si" id="searchInput" placeholder="Search tenant, unit, property..." oninput="applyFilters()"/>
+            </div>
+            <div class="selw">
+              <select class="fsel" id="statusFilter" onchange="applyFilters()">
+                <option value="">All Statuses</option>
+                <option>Paid</option>
+                <option>Pending</option>
+                <option>Overdue</option>
+                <option>Partial</option>
+              </select>
+            </div>
+            <div class="selw">
+              <select class="fsel" id="propFilter" onchange="applyFilters()">
+                <option value="">All Properties</option>
+                <option>Harbor View</option>
+                <option>Metropolitan Place</option>
+                <option>Sunset Plaza</option>
+                <option>Downtown Apartments</option>
+                <option>Riverside Residences</option>
+                <option>Greenwood Towers</option>
+              </select>
+            </div>
+            <div class="selw">
+              <select class="fsel" id="monthFilter" onchange="applyFilters()">
+                <option value="">All Months</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="pay-panel">
+            <div class="pay-panel-head">
+              <div class="pay-panel-title">
+                <span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>
+                Payment History
+                <span style="font-size:10.5px;color:var(--t2);background:var(--ink-3);border-radius:20px;padding:2px 8px;margin-left:3px" id="pCount">0</span>
+              </div>
+              <span style="font-size:11px;color:var(--t2)" id="filteredTotal"></span>
+            </div>
+            <div class="ptable-inner">
+              <table class="ptable">
+                <thead>
+                  <tr>
+                    <th>Tenant / Unit</th>
+                    <th>Property</th>
+                    <th>Amount</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Method</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="payTableBody">
+                  <tr><td colspan="8" style="padding:16px"><div class="skel"></div><div class="skel" style="opacity:.6"></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div style="margin-top:10px;font-size:11.5px;color:var(--t3)" id="resultCount"></div>
+        </div>
+
+        <!-- Right: record payment form -->
+        <div class="form-panel" id="payForm">
+          <div class="fp-title"><span>💳</span> Record Payment</div>
+
+          <div class="fld">
+            <label>Tenant <span style="color:var(--copper)">*</span></label>
+            <select id="f-tenant" onchange="handleTenantSelectChange()">
+              <option value="">— Select tenant —</option>
+              <option value="__new__">+ Add new tenant…</option>
+            </select>
+          </div>
+
+          <div class="frow">
+            <div class="fld">
+              <label>Property <span style="color:var(--copper)">*</span></label>
+              <select id="f-prop">
+                <option value="">— Select —</option>
+                <option>Harbor View</option>
+                <option>Metropolitan Place</option>
+                <option>Sunset Plaza</option>
+                <option>Downtown Apartments</option>
+                <option>Riverside Residences</option>
+                <option>Greenwood Towers</option>
+              </select>
+            </div>
+            <div class="fld">
+              <label>Unit</label>
+              <input type="text" id="f-unit" placeholder="e.g. A-402"/>
+            </div>
+          </div>
+
+          <div class="frow">
+            <div class="fld">
+              <label>Amount (KES) <span style="color:var(--copper)">*</span></label>
+              <input type="number" id="f-amount" placeholder="50000"/>
+            </div>
+            <div class="fld">
+              <label>Payment Type</label>
+              <select id="f-type">
+                <option>Rent</option>
+                <option>Deposit</option>
+                <option>Utility Bill</option>
+                <option>Penalty</option>
+                <option>Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="frow">
+            <div class="fld">
+              <label>Status <span style="color:var(--copper)">*</span></label>
+              <select id="f-status">
+                <option>Paid</option>
+                <option>Pending</option>
+                <option>Overdue</option>
+                <option>Partial</option>
+              </select>
+            </div>
+            <div class="fld">
+              <label>Method</label>
+              <select id="f-method">
+                <option>M-Pesa</option>
+                <option>Bank Transfer</option>
+                <option>Cash</option>
+                <option>Cheque</option>
+                <option>Card</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="fld">
+            <label>Payment Date <span style="color:var(--copper)">*</span></label>
+            <input type="date" id="f-date"/>
+          </div>
+
+          <div class="fld">
+            <label>Reference / Note</label>
+            <input type="text" id="f-ref" placeholder="e.g. M-Pesa ref QWE123..."/>
+          </div>
+
+          <button class="sbtn" id="submitBtn" onclick="submitPayment()">Record Payment →</button>
+          <div class="fmsg" id="fMsg"></div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="dash-footer">
+        <span>© <span id="yr"></span> <strong>DevMinds</strong> · All rights reserved.</span>
+        <span><a href="#">Privacy Policy</a> &nbsp;·&nbsp; <a href="#">Terms of Service</a></span>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════ PAYMENT DETAIL MODAL ════ -->
+<div class="overlay" id="payOverlay" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="m-head">
+      <div class="m-ico" id="mIco">💳</div>
+      <div style="flex:1;min-width:0">
+        <div class="m-title" id="mTitle">Payment Record</div>
+        <div class="m-sub" id="mSub">—</div>
+      </div>
+      <button class="m-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="m-body">
+      <div class="m-sec">
+        <div class="m-sec-title">Payment Details</div>
+        <div class="m-grid">
+          <div class="m-field"><div class="m-field-lbl">Tenant</div><div class="m-field-val" id="md-tenant">—</div></div>
+          <div class="m-field"><div class="m-field-lbl">Unit</div><div class="m-field-val" id="md-unit">—</div></div>
+          <div class="m-field"><div class="m-field-lbl">Property</div><div class="m-field-val" id="md-prop">—</div></div>
+          <div class="m-field"><div class="m-field-lbl">Amount</div><div class="m-field-val" id="md-amount" style="color:var(--green);font-family:'Cormorant Garamond',serif;font-size:18px">—</div></div>
+          <div class="m-field"><div class="m-field-lbl">Type</div><div class="m-field-val" id="md-type">—</div></div>
+          <div class="m-field"><div class="m-field-lbl">Status</div><div class="m-field-val" id="md-status">—</div></div>
+          <div class="m-field"><div class="m-field-lbl">Method</div><div class="m-field-val" id="md-method">—</div></div>
+          <div class="m-field"><div class="m-field-lbl">Date</div><div class="m-field-val" id="md-date">—</div></div>
+          <div class="m-field full"><div class="m-field-lbl">Reference</div><div class="m-field-val" id="md-ref" style="font-size:11.5px;color:var(--t2)">—</div></div>
+          <div class="m-field full"><div class="m-field-lbl">Record ID</div><div class="m-field-val" id="md-id" style="font-size:10.5px;color:var(--t3);font-family:monospace">—</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="m-btns">
+      <button class="m-close-btn" onclick="closeModal()">Close</button>
+      <button class="m-del-btn" onclick="deleteFromModal()">🗑 Delete Record</button>
+    </div>
+  </div>
+</div>
+
+<!-- Quick-add tenant modal -->
+<div class="overlay" id="quickTenantOverlay" onclick="closeQuickTenant(event)">
+  <div class="modal" style="width:420px" onclick="event.stopPropagation()">
+    <div class="m-head">
+      <div class="m-ico">🧑‍💼</div>
+      <div style="flex:1;min-width:0">
+        <div class="m-title">Add New Tenant</div>
+        <div class="m-sub">Creates a real tenant account, then selects them for this payment</div>
+      </div>
+      <button class="m-close" onclick="closeQuickTenant()">✕</button>
+    </div>
+    <div class="m-body">
+      <div class="frow">
+        <div class="fld">
+          <label>First Name <span style="color:var(--copper)">*</span></label>
+          <input type="text" id="qt-first" placeholder="Jane"/>
+        </div>
+        <div class="fld">
+          <label>Last Name <span style="color:var(--copper)">*</span></label>
+          <input type="text" id="qt-last" placeholder="Wanjiru"/>
+        </div>
+      </div>
+      <div class="fld">
+        <label>Email <span style="color:var(--copper)">*</span></label>
+        <input type="email" id="qt-email" placeholder="jane.wanjiru@email.com"/>
+      </div>
+      <div class="fld">
+        <label>Phone</label>
+        <input type="text" id="qt-phone" placeholder="07xx xxx xxx"/>
+      </div>
+      <div class="fmsg" id="qtMsg" style="margin-top:6px"></div>
+      <div id="qtPasswordBox" style="display:none;margin-top:10px;padding:12px;border-radius:10px;background:var(--ink-3);border:1px solid var(--border-2)">
+        <div style="font-size:11px;color:var(--t2);margin-bottom:4px">Temporary password — share this with the tenant so they can sign in:</div>
+        <div id="qtPasswordValue" style="font-family:monospace;font-size:15px;color:var(--copper-l);font-weight:700;letter-spacing:.03em"></div>
+      </div>
+    </div>
+    <div class="m-btns">
+      <button class="m-close-btn" onclick="closeQuickTenant()">Cancel</button>
+      <button class="sbtn" id="qtSubmitBtn" onclick="submitQuickTenant()" style="flex:1">Create & Select Tenant →</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* ════ CONFIG ════ */
+const API = 'http://localhost:3000';
+
+/* ══════════════ AUTH HELPERS ══════════════ */
+// Reads the JWT saved at login/signup
+function getToken() {
+  const raw = sessionStorage.getItem('mp_session');
+  if (!raw) return null;
+  try { return JSON.parse(raw).token || null; } catch { return null; }
+}
+
+// Wraps fetch: attaches the Bearer token automatically and bounces to
+// the sign-in page if the token is missing/expired (401 from the API)
+async function apiFetch(url, options = {}) {
+  const token = getToken();
+  const headers = { ...(options.headers || {}) };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(url, { ...options, headers });
+
+  if (res.status === 401) {
+    sessionStorage.removeItem('mp_session');
+    window.location.href = 'auth.html';
+  }
+  return res;
+}
+
+const PROPS_META = {
+  'Harbor View':         { hex:'#2eb8c5', emoji:'⚓' },
+  'Metropolitan Place':  { hex:'#8b8ff5', emoji:'🏙' },
+  'Sunset Plaza':        { hex:'#f07040', emoji:'🌅' },
+  'Downtown Apartments': { hex:'#4a9ef5', emoji:'🌆' },
+  'Riverside Residences':{ hex:'#48c78e', emoji:'🌿' },
+  'Greenwood Towers':    { hex:'#78c44a', emoji:'🌲' },
+};
+
+const STATUS_PILL = { 'Paid':'p-green','Pending':'p-amber','Overdue':'p-red','Partial':'p-purple' };
+const METHOD_ICO  = { 'M-Pesa':'📱','Bank Transfer':'🏦','Cash':'💵','Cheque':'📄','Card':'💳' };
+
+/* ════ STATE ════ */
+let ALL_PAY  = [];
+let FILTERED = [];
+let MODAL_ID = null;
+
+/* ════ HELPERS ════ */
+function fmtRev(n) {
+  if (!n||n<=0) return '—';
+  if (n>=1_000_000) return `KES ${(n/1_000_000).toFixed(2).replace(/\.?0+$/,'')}M`;
+  if (n>=1_000)     return `KES ${(n/1_000).toFixed(0)}K`;
+  return `KES ${n}`;
+}
+function fmtFull(n) { return n ? `KES ${Number(n).toLocaleString()}` : '—'; }
+const fmtDate  = d => d ? new Date(d).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+const fmtMonth = d => d ? new Date(d).toLocaleDateString('en-GB',{month:'short',year:'numeric'}) : '—';
+const ini = s => (!s||s==='—') ? '?' : s.trim().split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2);
+
+const AV = [
+  ['rgba(46,184,197,.22)','#2eb8c5'],['rgba(139,143,245,.22)','#8b8ff5'],
+  ['rgba(240,112,64,.22)','#f07040'],['rgba(72,199,142,.22)','#48c78e'],
+  ['rgba(184,131,74,.22)','#b8834a'],['rgba(74,158,245,.22)','#4a9ef5'],
+];
+const avColor = s => { let h=0; for(let i=0;i<s.length;i++) h=s.charCodeAt(i)+((h<<5)-h); return AV[Math.abs(h)%AV.length]; };
+
+/* ════ DEMO DATA ════ */
+function getDemoPayments() {
+  const now = new Date();
+  const mo  = d => new Date(now.getFullYear(), now.getMonth()-d, 5).toISOString();
+  return [
+    { _id:'p1', tenant:'Alice Kamau',    property:'Harbor View',          unit:'A-102', amount:45000, type:'Rent',    status:'Paid',    method:'M-Pesa',      reference:'QWE1234', date: mo(0) },
+    { _id:'p2', tenant:'Brian Otieno',   property:'Metropolitan Place',   unit:'C-305', amount:85000, type:'Rent',    status:'Paid',    method:'Bank Transfer',reference:'TRF9982', date: mo(0) },
+    { _id:'p3', tenant:'Carol Mwangi',   property:'Sunset Plaza',         unit:'B-201', amount:55000, type:'Rent',    status:'Overdue', method:'M-Pesa',      reference:'',        date: mo(1) },
+    { _id:'p4', tenant:'David Njoroge',  property:'Downtown Apartments',  unit:'D-410', amount:60000, type:'Rent',    status:'Paid',    method:'Cash',        reference:'Receipt 44',date: mo(0) },
+    { _id:'p5', tenant:'Eva Wanjiku',    property:'Riverside Residences', unit:'E-208', amount:70000, type:'Rent',    status:'Pending', method:'M-Pesa',      reference:'',        date: mo(0) },
+    { _id:'p6', tenant:'Frank Hassan',   property:'Greenwood Towers',     unit:'F-601', amount:120000,type:'Rent',    status:'Paid',    method:'Bank Transfer',reference:'TRF0021', date: mo(0) },
+    { _id:'p7', tenant:'Grace Achieng',  property:'Harbor View',          unit:'A-205', amount:45000, type:'Rent',    status:'Paid',    method:'M-Pesa',      reference:'MPE7754', date: mo(1) },
+    { _id:'p8', tenant:'Alice Kamau',    property:'Harbor View',          unit:'A-102', amount:10000, type:'Deposit', status:'Paid',    method:'Cash',        reference:'Deposit', date: mo(2) },
+    { _id:'p9', tenant:'Henry Ouma',     property:'Metropolitan Place',   unit:'C-102', amount:85000, type:'Rent',    status:'Overdue', method:'',            reference:'',        date: mo(1) },
+    { _id:'p10',tenant:'Ian Karanja',    property:'Sunset Plaza',         unit:'B-305', amount:55000, type:'Rent',    status:'Partial', method:'M-Pesa',      reference:'PART221', date: mo(0) },
+  ];
+}
+
+/* ════ LOAD TENANT ACCOUNTS FOR DROPDOWN ════ */
+async function loadTenants(selectId) {
+  const select = document.getElementById('f-tenant');
+  const BASE_OPTIONS = '<option value="">— Select tenant —</option><option value="__new__">+ Add new tenant…</option>';
+  try {
+    const r = await apiFetch(`${API}/auth/users`);
+    if (!r.ok) throw new Error();
+    const users = await r.json();
+    const tenants = users.filter(u => u.role === 'tenant');
+
+    select.innerHTML = BASE_OPTIONS +
+      tenants.map(t =>
+        `<option value="${t._id}">${escapeHtml(`${t.firstName} ${t.lastName}`)} (${escapeHtml(t.email)})</option>`
+      ).join('');
+
+    if (tenants.length === 0) {
+      select.innerHTML += '<option value="" disabled>No tenant accounts yet — use "+ Add new tenant" above</option>';
+    }
+
+    if (selectId) select.value = selectId;
+  } catch {
+    select.innerHTML = BASE_OPTIONS + '<option value="" disabled>— Could not load tenants (server offline) —</option>';
+  }
+}
+
+function escapeHtml(str) {
+  return String(str ?? '').replace(/[&<>"']/g, c => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  }[c]));
+}
+
+/* ════ QUICK-ADD TENANT ════ */
+function handleTenantSelectChange() {
+  const select = document.getElementById('f-tenant');
+  if (select.value === '__new__') {
+    select.value = ''; // don't leave the sentinel value selected
+    openQuickTenant();
+  }
+}
+
+function openQuickTenant() {
+  ['qt-first','qt-last','qt-email','qt-phone'].forEach(id => document.getElementById(id).value = '');
+  const msg = document.getElementById('qtMsg');
+  msg.textContent = ''; msg.className = 'fmsg';
+  document.getElementById('qtPasswordBox').style.display = 'none';
+  document.getElementById('qtSubmitBtn').textContent = 'Create & Select Tenant →';
+  document.getElementById('qtSubmitBtn').disabled = false;
+  document.getElementById('qtSubmitBtn').onclick = submitQuickTenant;
+  document.getElementById('quickTenantOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('qt-first').focus(), 200);
+}
+
+function closeQuickTenant(e) {
+  if (!e || e.target === document.getElementById('quickTenantOverlay')) {
+    document.getElementById('quickTenantOverlay').classList.remove('open');
+  }
+}
+
+function generateTempPassword() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+  let out = '';
+  for (let i = 0; i < 10; i++) out += chars[Math.floor(Math.random() * chars.length)];
+  return out;
+}
+
+async function submitQuickTenant() {
+  const firstName = document.getElementById('qt-first').value.trim();
+  const lastName  = document.getElementById('qt-last').value.trim();
+  const email     = document.getElementById('qt-email').value.trim();
+  const phone     = document.getElementById('qt-phone').value.trim();
+  const msg       = document.getElementById('qtMsg');
+  const btn       = document.getElementById('qtSubmitBtn');
+
+  if (!firstName || !lastName) { showMsg(msg, '❌ First and last name are required.', 'err'); return; }
+  if (!email)                  { showMsg(msg, '❌ Email is required.', 'err'); return; }
+
+  const tempPassword = generateTempPassword();
+
+  btn.disabled = true; btn.textContent = 'Creating...';
+
+  try {
+    const res = await apiFetch(`${API}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ firstName, lastName, email, phone, role: 'tenant', password: tempPassword }),
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      await loadTenants(data.user._id); // refresh dropdown and auto-select the new tenant
+
+      showMsg(msg, `✅ Tenant account created for ${firstName}!`, 'ok');
+      document.getElementById('qtPasswordValue').textContent = tempPassword;
+      document.getElementById('qtPasswordBox').style.display = 'block';
+
+      btn.textContent = 'Done →';
+      btn.disabled = false;
+      btn.onclick = () => closeQuickTenant();
+    } else {
+      showMsg(msg, `❌ ${data.message}`, 'err');
+      btn.disabled = false; btn.textContent = 'Create & Select Tenant →';
+    }
+  } catch {
+    showMsg(msg, '❌ Cannot reach server.', 'err');
+    btn.disabled = false; btn.textContent = 'Create & Select Tenant →';
+  }
+}
+
+/* ════ LOAD ════ */
+async function loadAll() {
+  // Load units for reference (optional, for context)
+  try {
+    const r = await apiFetch(`${API}/payments`);
+    if (!r.ok) throw new Error();
+    ALL_PAY = await r.json();
+    document.getElementById('cdot').className = 'cdot live';
+    document.getElementById('ctext').textContent = '✅  Live · MongoDB connected · Payment Records';
+    document.getElementById('syncLbl').textContent = 'Updated ' + new Date().toLocaleTimeString();
+  } catch {
+    ALL_PAY = getDemoPayments();
+    document.getElementById('cdot').className = 'cdot dead';
+    document.getElementById('ctext').textContent = '⚠️  Demo data — add /payments route to server.js to enable live payments';
+    document.getElementById('syncLbl').textContent = 'Demo mode';
+  }
+  buildMonthFilter();
+  renderKPIs();
+  renderRevBars();
+  applyFilters();
+}
+
+/* ════ MONTH FILTER ════ */
+function buildMonthFilter() {
+  const months = [...new Set(ALL_PAY.map(p => fmtMonth(p.date)))].filter(Boolean);
+  const sel = document.getElementById('monthFilter');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">All Months</option>' +
+    months.map(m => `<option value="${m}" ${m===cur?'selected':''}>${m}</option>`).join('');
+}
+
+/* ════ KPIs ════ */
+function renderKPIs() {
+  const paid    = ALL_PAY.filter(p => p.status === 'Paid');
+  const pending = ALL_PAY.filter(p => p.status === 'Pending');
+  const overdue = ALL_PAY.filter(p => p.status === 'Overdue');
+  const total   = paid.reduce((s,p) => s + (Number(p.amount)||0), 0);
+  const pendAmt = pending.reduce((s,p) => s + (Number(p.amount)||0), 0);
+  const ovAmt   = overdue.reduce((s,p) => s + (Number(p.amount)||0), 0);
+
+  const now     = new Date();
+  const thisM   = ALL_PAY.filter(p => {
+    if (!p.date) return false;
+    const d = new Date(p.date);
+    return d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear() && p.status==='Paid';
+  });
+  const monthAmt = thisM.reduce((s,p) => s+(Number(p.amount)||0), 0);
+
+  document.getElementById('k-total').textContent     = fmtRev(total);
+  document.getElementById('k-total-sub').textContent = `${paid.length} paid records`;
+  document.getElementById('k-month').textContent     = fmtRev(monthAmt);
+  document.getElementById('k-month-sub').textContent = `${now.toLocaleString('default',{month:'long'})} ${now.getFullYear()}`;
+  document.getElementById('k-pending').textContent   = fmtRev(pendAmt);
+  document.getElementById('k-overdue').textContent   = fmtRev(ovAmt);
+
+  document.getElementById('tbSub').textContent =
+    `${ALL_PAY.length} records · ${fmtRev(total)} collected · ${overdue.length} overdue`;
+}
+
+/* ════ REV BARS ════ */
+function renderRevBars() {
+  const propTotals = Object.keys(PROPS_META).map(name => {
+    const total = ALL_PAY
+      .filter(p => p.property === name && p.status === 'Paid')
+      .reduce((s,p) => s+(Number(p.amount)||0), 0);
+    return { name, total, ...PROPS_META[name] };
+  }).sort((a,b) => b.total - a.total);
+
+  const max = Math.max(...propTotals.map(p=>p.total), 1);
+
+  document.getElementById('propBars').innerHTML = propTotals.map(p => `
+    <div class="pb-row">
+      <div class="pb-label">${p.emoji} ${p.name}</div>
+      <div class="pb-track">
+        <div class="pb-fill" style="width:${(p.total/max*100).toFixed(1)}%;background:${p.hex}"></div>
+      </div>
+      <div class="pb-val">${fmtRev(p.total)}</div>
+      <div class="pb-pct">${((p.total/Math.max(ALL_PAY.filter(x=>x.status==='Paid').reduce((s,x)=>s+(Number(x.amount)||0),0),1))*100).toFixed(0)}%</div>
+    </div>`).join('');
+}
+
+/* ════ FILTER ════ */
+function applyFilters() {
+  const q     = document.getElementById('searchInput').value.toLowerCase();
+  const stat  = document.getElementById('statusFilter').value;
+  const prop  = document.getElementById('propFilter').value;
+  const month = document.getElementById('monthFilter').value;
+
+  FILTERED = ALL_PAY.filter(p => {
+    const mq   = !q || (p.tenant||'').toLowerCase().includes(q) || (p.unit||'').toLowerCase().includes(q) || (p.property||'').toLowerCase().includes(q) || (p.reference||'').toLowerCase().includes(q);
+    const ms   = !stat  || p.status   === stat;
+    const mp   = !prop  || p.property === prop;
+    const mm   = !month || fmtMonth(p.date) === month;
+    return mq && ms && mp && mm;
+  });
+
+  // Sort newest first
+  FILTERED.sort((a,b) => new Date(b.date||0) - new Date(a.date||0));
+
+  const fTotal = FILTERED.reduce((s,p) => s+(Number(p.amount)||0), 0);
+  document.getElementById('pCount').textContent       = FILTERED.length;
+  document.getElementById('filteredTotal').textContent = FILTERED.length ? `Total: ${fmtFull(fTotal)}` : '';
+  document.getElementById('resultCount').textContent  = `Showing ${FILTERED.length} of ${ALL_PAY.length} records`;
+
+  renderTable();
+}
+
+/* ════ TABLE ════ */
+function renderTable() {
+  const body = document.getElementById('payTableBody');
+  if (FILTERED.length === 0) {
+    body.innerHTML = `<tr><td colspan="8"><div class="empty"><div class="eico">💳</div>No payment records match your filters.</div></td></tr>`;
+    return;
+  }
+
+  body.innerHTML = FILTERED.map(p => {
+    const pm  = PROPS_META[p.property] || { hex:'#7a83a0', emoji:'🏠' };
+    const ac  = avColor((p.tenant||'')+(p.unit||''));
+    const mico = METHOD_ICO[p.method] || '💰';
+    const isOv = p.status === 'Overdue';
+    return `
+      <tr onclick="openModal('${p._id}')" style="${isOv?'background:rgba(240,96,96,.03)':''}">
+        <td>
+          <div class="t-cell">
+            <div class="t-av" style="background:${ac[0]};color:${ac[1]}">${ini(p.tenant)}</div>
+            <div>
+              <div class="t-name">${p.tenant||'—'}</div>
+              <div class="t-unit">Unit ${p.unit||'—'}</div>
+            </div>
+          </div>
+        </td>
+        <td>
+          <div class="prop-badge">
+            <div class="prop-dot" style="background:${pm.hex}"></div>
+            ${pm.emoji} ${p.property||'—'}
+          </div>
+        </td>
+        <td style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;color:${p.status==='Paid'?'var(--green)':p.status==='Overdue'?'var(--red)':'var(--amber)'}">${fmtFull(p.amount)}</td>
+        <td style="color:var(--t2)">${p.type||'Rent'}</td>
+        <td><span class="pill ${STATUS_PILL[p.status]||'p-copper'}">${p.status||'—'}</span></td>
+        <td style="color:var(--t2);font-size:11.5px">${fmtDate(p.date)}</td>
+        <td style="color:var(--t2)">${mico} ${p.method||'—'}</td>
+        <td onclick="event.stopPropagation()">
+          <div style="display:flex;gap:5px">
+            <button class="act-btn view-btn" onclick="openModal('${p._id}')">👁 View</button>
+            <button class="act-btn del-btn" onclick="deletePayment('${p._id}')">🗑</button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+/* ════ MODAL ════ */
+function openModal(id) {
+  const p = ALL_PAY.find(x => x._id === id);
+  if (!p) return;
+  MODAL_ID = id;
+  const pm = PROPS_META[p.property] || { hex:'#7a83a0', emoji:'🏠' };
+  const mico = METHOD_ICO[p.method] || '💰';
+
+  document.getElementById('mTitle').textContent   = `${fmtFull(p.amount)} — ${p.tenant||'—'}`;
+  document.getElementById('mSub').innerHTML       = `<span class="pill ${STATUS_PILL[p.status]||'p-copper'}">${p.status||'—'}</span>&nbsp; ${pm.emoji} ${p.property||'—'}${p.unit?` · Unit ${p.unit}`:''}`;
+  document.getElementById('mIco').textContent     = p.status==='Paid' ? '✅' : p.status==='Overdue' ? '⚠️' : '⏳';
+  document.getElementById('mIco').style.background= p.status==='Paid' ? 'var(--green-bg)' : p.status==='Overdue' ? 'var(--red-bg)' : 'var(--amber-bg)';
+  document.getElementById('md-tenant').textContent= p.tenant   || '—';
+  document.getElementById('md-unit').textContent  = p.unit     || '—';
+  document.getElementById('md-prop').innerHTML    = `<span style="display:inline-flex;align-items:center;gap:5px"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${pm.hex}"></span>${pm.emoji} ${p.property||'—'}</span>`;
+  document.getElementById('md-amount').textContent= fmtFull(p.amount);
+  document.getElementById('md-type').textContent  = p.type     || '—';
+  document.getElementById('md-status').innerHTML  = `<span class="pill ${STATUS_PILL[p.status]||'p-copper'}">${p.status||'—'}</span>`;
+  document.getElementById('md-method').textContent= `${mico} ${p.method||'—'}`;
+  document.getElementById('md-date').textContent  = fmtDate(p.date);
+  document.getElementById('md-ref').textContent   = p.reference || 'No reference provided';
+  document.getElementById('md-id').textContent    = p._id;
+
+  document.getElementById('payOverlay').classList.add('open');
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('payOverlay'))
+    document.getElementById('payOverlay').classList.remove('open');
+}
+
+/* ════ DELETE ════ */
+async function deletePayment(id) {
+  if (!confirm('Delete this payment record? This cannot be undone.')) return;
+  if (id.startsWith('p') && id.length <= 3) { // demo
+    ALL_PAY = ALL_PAY.filter(p => p._id !== id);
+    renderKPIs(); renderRevBars(); applyFilters(); return;
+  }
+  try {
+    await apiFetch(`${API}/payments/${id}`, { method:'DELETE' });
+    ALL_PAY = ALL_PAY.filter(p => p._id !== id);
+    renderKPIs(); renderRevBars(); applyFilters();
+  } catch { alert('❌ Cannot connect to server.'); }
+}
+
+async function deleteFromModal() {
+  if (!MODAL_ID) return;
+  closeModal();
+  await deletePayment(MODAL_ID);
+}
+
+/* ════ SUBMIT ════ */
+async function submitPayment() {
+  const tenantSelect = document.getElementById('f-tenant');
+  const tenantId   = tenantSelect.value;
+  const tenant     = tenantId ? tenantSelect.selectedOptions[0].textContent.replace(/\s*\([^)]*\)$/, '') : '';
+  const property = document.getElementById('f-prop').value;
+  const unit     = document.getElementById('f-unit').value.trim();
+  const amount   = document.getElementById('f-amount').value.trim();
+  const type     = document.getElementById('f-type').value;
+  const status   = document.getElementById('f-status').value;
+  const method   = document.getElementById('f-method').value;
+  const date     = document.getElementById('f-date').value;
+  const reference= document.getElementById('f-ref').value.trim();
+  const msg      = document.getElementById('fMsg');
+  const btn      = document.getElementById('submitBtn');
+
+  if (!tenantId) { showMsg(msg,'❌ Please select a tenant.','err'); return; }
+  if (!property) { showMsg(msg,'❌ Please select a property.','err'); return; }
+  if (!amount || Number(amount) <= 0) { showMsg(msg,'❌ Please enter a valid amount.','err'); return; }
+  if (!date)     { showMsg(msg,'❌ Payment date is required.','err'); return; }
+
+  btn.disabled = true; btn.textContent = 'Recording...';
+
+  const payload = { tenant, tenantId, property, unit, amount: Number(amount), type, status, method, date, reference, createdAt: new Date().toISOString() };
+
+  try {
+    const res  = await apiFetch(`${API}/payments`, {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (res.ok) {
+      showMsg(msg, `✅ Payment of ${fmtFull(amount)} recorded for ${tenant}!`, 'ok');
+      ['f-unit','f-amount','f-ref','f-date'].forEach(id => document.getElementById(id).value='');
+      document.getElementById('f-tenant').value = '';
+      document.getElementById('f-prop').value='';
+      await loadAll();
+    } else {
+      showMsg(msg, `❌ ${data.message}`, 'err');
+    }
+  } catch {
+    // Offline: add locally
+    payload._id = 'local_' + Date.now();
+    ALL_PAY.unshift(payload);
+    showMsg(msg, '⚠️ Server offline — saved locally.', 'err');
+    renderKPIs(); renderRevBars(); applyFilters();
+  } finally {
+    btn.disabled = false; btn.textContent = 'Record Payment →';
+  }
+}
+
+function showMsg(el, text, type) {
+  el.textContent = text; el.className = `fmsg ${type}`;
+  if (type==='ok') setTimeout(()=>{ el.textContent=''; el.className='fmsg'; }, 4000);
+}
+
+function scrollToForm() {
+  document.getElementById('payForm').scrollIntoView({ behavior:'smooth' });
+  setTimeout(() => document.getElementById('f-tenant').focus(), 400);
+}
+
+/* ════ SESSION ════ */
+function loadSession() {
+  const raw = sessionStorage.getItem('mp_session');
+  if (!raw) return;
+  const u = JSON.parse(raw);
+  const fullName = `${u.firstName||''} ${u.lastName||''}`.trim() || 'User';
+  const initials = ((u.firstName||'?')[0]+(u.lastName||'?')[0]).toUpperCase();
+  const ROLES = {'agency-director':'🏢 Agency Director','property-manager':'🗝 Property Manager','finance-officer':'💰 Finance Officer','maintenance-staff':'🔧 Maintenance Staff','leasing-agent':'📋 Leasing Agent','tenant':'🏠 Tenant','auditor':'📊 Auditor / Viewer'};
+  const av = document.getElementById('sbAv');
+  if (u.avatar) { av.innerHTML=`<img src="${u.avatar}" alt="${fullName}"/>`; }
+  else { av.textContent = initials; }
+  document.getElementById('sbName').textContent = fullName;
+  document.getElementById('sbRole').textContent = ROLES[u.role] || u.role || '—';
+}
+
+/* ════ CLOCK ════ */
+(function tick() {
+  document.getElementById('clock').textContent =
+    new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  setTimeout(tick,1000);
+})();
+
+/* ════ SET TODAY'S DATE DEFAULT ════ */
+document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+
+/* ════ INIT ════ */
+document.getElementById('yr').textContent = new Date().getFullYear();
+loadSession();
+loadTenants();
+loadAll();
+setInterval(loadAll, 15000);
+</script>
+</body>
+</html>
